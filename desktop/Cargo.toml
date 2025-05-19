@@ -1,0 +1,25 @@
+[package]
+default-run = "masters-desktop"
+edition = "2024"
+name = "masters-desktop"
+version = "0.1.0"
+
+[dependencies]
+env_logger = { version = "0.11.8", default-features = false }
+glam = { workspace = true }
+log = { workspace = true }
+pollster = "0.4"
+wgpu = { version = "25.0.0", default-features = false, features = [
+    "vulkan",
+    "wgsl",
+] }
+winit = { version = "0.30.10" }
+
+
+[profile.dev]
+# debug = "line-tables-only"
+opt-level = 1
+# strip = true
+
+[profile.dev.package."*"]
+opt-level = 2
