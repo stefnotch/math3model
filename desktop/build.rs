@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 
 use wesl::{
-    CompileOptions, EscapeMangler, ModulePath, StandardResolver, compile_sourcemap,
+    CompileOptions, EscapeMangler, Mangler, ModulePath, StandardResolver, compile_sourcemap,
     emit_rerun_if_changed, syntax::PathOrigin,
 };
+use wgsl_to_wgpu::{MatrixVectorTypes, TypePath, WriteOptions, create_shader_modules};
 
 /// Taken from https://docs.rs/build-print/latest/build_print/macro.println.html
 macro_rules! log {
@@ -38,7 +39,46 @@ fn main() {
         })
         .unwrap();
     emit_rerun_if_changed(&compiled.modules, &resolver);
-    compiled
-        .write_to_file(output_file)
-        .expect("failed to write output shader");
+    let compiled_code = compiled.to_string();
+    std::fs::write(&output_file, &compiled_code).unwrap();
+
+    // TODO: This part here is tricky. If I have more than one entry point that share some structs,
+    // then I'll generate multiple structs.
+    // So I need a "super duper" entry point.
+    let modules = create_shader_modules(
+        &compiled_code,
+        WriteOptions {
+            // We need to use bytemuck for vertex buffer
+            derive_bytemuck_vertex: true,
+            derive_bytemuck_host_shareable: false,
+            // And encase for uniform buffers and storage buffers
+            derive_encase_host_shareable: true,
+            derive_serde: false,
+            matrix_vector_types: MatrixVectorTypes::Glam,
+            rustfmt: false,
+            validate: None,
+        },
+        wesl_unmangler,
+    )
+    .unwrap();
+
+    output_file.set_extension("rs");
+    std::fs::write(&output_file, &modules).unwrap();
+}
+
+fn wesl_unmangler(mangled_name: &str) -> TypePath {
+    let Some((module_path, name)) = EscapeMangler.unmangle(mangled_name) else {
+        panic!("Failed to unmangle {mangled_name}")
+    };
+
+    assert_eq!(
+        module_path.origin,
+        wesl::syntax::PathOrigin::Absolute,
+        "Generated WGSL paths are absolute paths"
+    );
+
+    TypePath {
+        parents: module_path.components,
+        name,
+    }
 }
