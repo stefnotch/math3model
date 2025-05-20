@@ -5,9 +5,10 @@ name = "masters-desktop"
 version = "0.1.0"
 
 [dependencies]
+dioxus-devtools.workspace = true
 env_logger = { version = "0.11.8", default-features = false }
-glam = { workspace = true }
-log = { workspace = true }
+glam.workspace = true
+log.workspace = true
 pollster = "0.4"
 wgpu = { version = "25.0.0", default-features = false, features = [
     "vulkan",
@@ -16,5 +17,5 @@ wgpu = { version = "25.0.0", default-features = false, features = [
 winit = { version = "0.30.11" }
 
 [build-dependencies]
-wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs" }
+wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", branch = "stefnotch-patch-1" }
 wgsl_to_wgpu = { git = "https://github.com/ScanMountGoat/wgsl_to_wgpu", branch = "modules" }

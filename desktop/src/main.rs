@@ -77,6 +77,10 @@ impl State {
     }
 
     fn render(&mut self) {
+        dioxus_devtools::subsecond::HotFn::current(State::render_inner).call((self,));
+    }
+
+    fn render_inner(&mut self) {
         // Create texture view
         let surface_texture = self
             .surface
@@ -100,7 +104,7 @@ impl State {
                 view: &texture_view,
                 resolve_target: None,
                 ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
+                    load: wgpu::LoadOp::Clear(wgpu::Color::BLUE),
                     store: wgpu::StoreOp::Store,
                 },
             })],
@@ -172,6 +176,8 @@ impl ApplicationHandler for App {
 }
 
 fn main() {
+    dioxus_devtools::connect_subsecond();
+
     env_logger::Builder::from_env(Env::default().default_filter_or("info"))
         .filter_module("wgpu_hal::vulkan::instance", log::LevelFilter::Warn)
         .filter_module("naga::back::spv::writer", log::LevelFilter::Warn)
