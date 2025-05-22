@@ -158,6 +158,14 @@ impl ApplicationHandler for App {
                 // here as this event is always followed up by redraw request.
                 state.resize(size);
             }
+            WindowEvent::KeyboardInput { event, .. } => {
+                if event.logical_key
+                    == winit::keyboard::Key::Named(winit::keyboard::NamedKey::Escape)
+                {
+                    println!("The escape key was pressed; stopping");
+                    event_loop.exit();
+                }
+            }
             _ => (),
         }
     }

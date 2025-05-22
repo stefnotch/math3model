@@ -610,9 +610,9 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.29.3"
+version = "0.30.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8babf46d4c1c9d92deac9f7be466f76dfc4482b6452fc5024b5e8daf6ffeb3ee"
+checksum = "6b46b9ca4690308844c644e7c634d68792467260e051c8543e0c7871662b3ba7"
 dependencies = [
  "bytemuck",
 ]
@@ -2210,7 +2210,7 @@ dependencies = [
 [[package]]
 name = "wesl"
 version = "0.1.2"
-source = "git+https://github.com/stefnotch/wesl-rs?branch=feat%2Fbuild-rs-emit-rerun#8760486ba9498ce2433865c753f14bb1f9e62f9c"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs#1f9a2356e6c8b1abc5610ac99bf150d8992ff996"
 dependencies = [
  "annotate-snippets",
  "derive_more",
@@ -2225,7 +2225,7 @@ dependencies = [
 [[package]]
 name = "wesl-macros"
 version = "0.1.2"
-source = "git+https://github.com/stefnotch/wesl-rs?branch=feat%2Fbuild-rs-emit-rerun#8760486ba9498ce2433865c753f14bb1f9e62f9c"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs#1f9a2356e6c8b1abc5610ac99bf150d8992ff996"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -2357,7 +2357,7 @@ dependencies = [
 [[package]]
 name = "wgsl-parse"
 version = "0.1.2"
-source = "git+https://github.com/stefnotch/wesl-rs?branch=feat%2Fbuild-rs-emit-rerun#8760486ba9498ce2433865c753f14bb1f9e62f9c"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs#1f9a2356e6c8b1abc5610ac99bf150d8992ff996"
 dependencies = [
  "annotate-snippets",
  "derive_more",
@@ -2729,9 +2729,9 @@ checksum = "271414315aff87387382ec3d271b52d7ae78726f5d44ac98b4f4030c91880486"
 
 [[package]]
 name = "winit"
-version = "0.30.10"
+version = "0.30.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0d05bd8908e14618c9609471db04007e644fd9cce6529756046cfc577f9155e"
+checksum = "a4409c10174df8779dc29a4788cac85ed84024ccbc1743b776b21a520ee1aaf4"
 dependencies = [
  "ahash",
  "android-activity",

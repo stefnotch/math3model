@@ -1,0 +1,8 @@
+[build]
+rustflags = ["-Z", "threads=8"] # Rust parallel frontend
+
+[unstable]
+codegen-backend = true # Allow changing to cranelift
+
+[profile.dev]
+codegen-backend = "cranelift" # Use cranelift

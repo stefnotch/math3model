@@ -13,8 +13,8 @@ wgpu = { version = "25.0.0", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
-winit = { version = "0.30.10" }
+winit = { version = "0.30.11" }
 
 [build-dependencies]
-wesl = { git = "https://github.com/stefnotch/wesl-rs", branch = "feat/build-rs-emit-rerun" }
+wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs" }
 wgsl_to_wgpu = { git = "https://github.com/ScanMountGoat/wgsl_to_wgpu", branch = "modules" }
