@@ -6,3 +6,6 @@ rustflags = ["-Z", "threads=8"] # Rust parallel frontend
 
 #[profile.dev]
 #codegen-backend = "cranelift" # Use cranelift
+
+#[target.x86_64-pc-windows-msvc]
+#linker = "rust-lld" # Tiny linking perf boost. I think
