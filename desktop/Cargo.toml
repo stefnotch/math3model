@@ -10,7 +10,7 @@ env_logger = { version = "0.11.8", default-features = false }
 glam.workspace = true
 log.workspace = true
 pollster = "0.4"
-wgpu = { version = "25.0.0", default-features = false, features = [
+wgpu = { version = "25.0.2", default-features = false, features = [
     "vulkan",
     "wgsl",
 ] }
