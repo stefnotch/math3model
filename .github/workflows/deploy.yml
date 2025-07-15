@@ -30,11 +30,7 @@ jobs:
         run: cargo run --bin copy-includes
         working-directory: ./math3render
       - name: Install wasm-bindgen
-        run: npm ci
-        working-directory: ./math3render
-      - name: Build with wasm-bindgen
-        run: npm run build
-        working-directory: ./math3render
+        run: cargo install -f wasm-bindgen-cli
       - name: Setup Node.js environment
         uses: actions/setup-node@v4.0.2
         with:

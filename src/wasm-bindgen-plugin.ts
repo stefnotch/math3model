@@ -85,7 +85,7 @@ async function compileWasm() {
   });
 
   // LATER:
-  // cargo install -f wasm-bindgen-cliwasm-bindgen
+  // cargo install -f wasm-bindgen-cli
 
   await new Promise<number>((resolve, reject) => {
     const cargoBuild = spawn(

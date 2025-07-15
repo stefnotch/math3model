@@ -6,18 +6,14 @@ Features are developed in another branch or fork. After the feature is ready, a 
 
 - Node 20 or greater. Don't install Chocolatey.
 - A code editor, like VSCode or Webstorm.
+- Rust
+  - With wasm32-unknown-unknown
+  - And `cargo install -f wasm-bindgen-cli`
 
 ## Project Setup
 
 ```sh
 npm install
-```
-
-and then compile the Rust renderer
-
-```sh
-cd math3render
-npm run build
 ```
 
 ### Compile and Hot-Reload for Development
@@ -43,12 +39,6 @@ npm run build
   - Settings &rarr; Format On Save &rarr; Enable (`"editor.formatOnSave": true,`)
   - If you are using autosave: Settings &rarr; Autosave &rarr; On Focus Change (`"files.autoSave": "onFocusChange",`)
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) for slightly better Tailwind CSS suggestions
-- [Rete.js Vue Plugin](https://retejs.org/docs/api/rete-vue-plugin) for the external library `rete.js` setup used for the code graph
-- [Rete.js Area Plugin](https://retejs.org/docs/api/rete-area-plugin) for the code graph rendering
-
-I also recommend trying out the following browser extension
-
-- [Vue Devtools](https://devtools.vuejs.org/) to get top-notch Vue.js debugging support
 
 ### Code Structure
 
@@ -93,13 +83,11 @@ I also recommend trying out the following browser extension
 - TailwindCSS documentation
 - [NaiveUI Components](https://www.naiveui.com/en-US/os-theme/components/button)
 - [Material Design Icons](https://icon-sets.iconify.design/mdi/), use them with `mdi-icon-name` (e.g. `<mdi-hamburger-menu />`)
-- [Rete.js Documentation](https://retejs.org/docs)
 
 Other libraries where one can look up the documentation as needed are
 
 - Typescript
 - Pinia: For the `src/stores/`
-- Vitest: For unit tests
 
 ## High Level Structure
 
