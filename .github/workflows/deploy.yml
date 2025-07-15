@@ -28,13 +28,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run copy-includes
         run: cargo run --bin copy-includes
-        working-directory: ./parametric-renderer-core
+        working-directory: ./math3render
       - name: Install wasm-bindgen
         run: npm ci
-        working-directory: ./parametric-renderer-core
+        working-directory: ./math3render
       - name: Build with wasm-bindgen
         run: npm run build
-        working-directory: ./parametric-renderer-core
+        working-directory: ./math3render
       - name: Setup Node.js environment
         uses: actions/setup-node@v4.0.2
         with:

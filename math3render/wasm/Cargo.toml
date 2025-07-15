@@ -1,7 +1,7 @@
 [package]
-edition = "2024"
 name = "web"
 version = "0.2.0"
+edition = "2024"
 
 [lib]
 crate-type = ["cdylib"]
@@ -13,14 +13,13 @@ console_error_panic_hook = "0.1.7"
 console_log = "1.0"
 glam = { workspace = true }
 log = { workspace = true }
-renderer-core = { path = "../renderer-core" }
+render = { path = "../render" }
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
 tsify-next = "0.5.5"
-
 uuid = { workspace = true, features = [
   "js",
-] } # Needed for the UUID crate that the renderer-core uses
+] }  # Needed for the UUID crate that the render uses
 wasm-bindgen = "0.2.100"
 wasm-bindgen-futures = "0.4.50"
 web-sys = { version = "0.3.77", features = [
@@ -28,7 +27,7 @@ web-sys = { version = "0.3.77", features = [
   "ImageBitmap",
 ] }
 wgpu = { workspace = true, features = [
-  "webgpu",
   "fragile-send-sync-non-atomic-wasm",
+  "webgpu",
 ] }
 winit = { workspace = true }

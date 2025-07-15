@@ -16,7 +16,7 @@ npm install
 and then compile the Rust renderer
 
 ```sh
-cd parametric-renderer-core
+cd math3render
 npm run build
 ```
 
@@ -52,7 +52,7 @@ I also recommend trying out the following browser extension
 
 ### Code Structure
 
-- `parametric-renderer-core/` - Rust implementation of the renderer. [See Readme there](./parametric-renderer-core/README.md)
+- `math3render/` - Rust implementation of the renderer. [See Readme there](./math3render/README.md)
 - `public/` - files that are directly copied to the generated website
 - `src/` - frontend code
 - `src/assets/` - assets like pictures or CSS files
@@ -69,7 +69,7 @@ I also recommend trying out the following browser extension
 - `src/components/TopBar.vue` - Navigation Bar, with the `File`, `Export`, etc. menus
 - `src/components/WebGpu.vue` - Custom WebGPU code that is exclusively used by the exporter
 - `src/content-store/` - a reworked filesystem abstraction, unused
-- `src/engine/` - glue code for the native renderer (parametric-renderer-core)
+- `src/engine/` - glue code for the native renderer
 - `src/engine/sync-filesystem.ts` - syncs the textures with the native renderer
 - `src/engine/wgpu-engine.ts` - glue code, lets users ignore some messy async-await details
 - `src/filesystem/` - deals with saving and loading files. Uses the latest filesystem API together with a sandboxed "origin private filesystem".
@@ -114,7 +114,7 @@ The code graph generates `wgsl` code and stores it into a separate `.wgsl` file.
 
 The scene state is made reactive and editable with typical Vue.js frontend code.
 
-Rendering happens via the WebGPU API, which is used by [parametric-renderer-core](./parametric-renderer-core/), which is implemented in Rust and compiled to WebAssembly.
+Rendering happens via the WebGPU API, which is used by [math3render](./math3render/), which is implemented in Rust and compiled to WebAssembly.
 
 Exporting then happens in Typescript land, where we use the same WebGPU device from Typescript.
 

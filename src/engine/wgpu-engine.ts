@@ -4,7 +4,7 @@ import init, {
   type WasmShaderInfo,
   type WasmCompilationMessage,
   type WasmFrameTime,
-} from "../../parametric-renderer-core/pkg";
+} from "../../math3render/pkg";
 
 await init();
 

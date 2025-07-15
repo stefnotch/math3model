@@ -1,6 +1,6 @@
 # WebAssembly (WASM) Bindings for the Renderer
 
-This crate provides WebAssembly bindings to use the [renderer-core](./renderer-core] in web environments. It serves as the bridge between Rust and the browser, enabling seamless interaction between the frontend code and low-level renderer logic written in Rust.
+This crate provides WebAssembly bindings to use the [render](./render) in web environments. It serves as the bridge between Rust and the browser, enabling seamless interaction between the frontend code and low-level renderer logic written in Rust.
 
 ## Overview
 

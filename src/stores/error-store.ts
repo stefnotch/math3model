@@ -1,6 +1,6 @@
 import type { FilePath } from "@/filesystem/reactive-files";
 import { sceneFilesPromise } from "@/globals";
-import type { WasmCompilationMessage } from "parametric-renderer-core/pkg/web";
+import type { WasmCompilationMessage } from "math3render/pkg/web";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { computed, reactive } from "vue";
 

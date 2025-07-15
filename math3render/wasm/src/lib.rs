@@ -2,7 +2,7 @@ mod application;
 pub mod wasm_abi;
 
 use log::Level;
-use renderer_core::local_executor::LocalExecutor;
+use render::local_executor::LocalExecutor;
 use wasm_bindgen::prelude::*;
 #[wasm_bindgen(start)]
 pub fn run() {

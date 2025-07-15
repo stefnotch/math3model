@@ -1,11 +1,15 @@
 [package]
-build = "build.rs"
-edition = "2024"
-name = "renderer-core"
+name = "render"
 version = "0.2.0"
+edition = "2024"
+build = "build.rs"
 
 [lib]
 bench = false
+
+[[bench]]
+harness = false
+name = "gpu_bench"
 
 [dependencies]
 any_spawner = { version = "0.2.0" }
@@ -13,7 +17,7 @@ anyhow = "1.0"
 bytemuck = { workspace = true }
 encase = { workspace = true }
 futures = { version = "0.3.31", default-features = false, features = [
-    "executor",
+  "executor",
 ] }
 futures-channel = "0.3.31"
 glam = { workspace = true }
@@ -27,23 +31,19 @@ wgpu = { workspace = true }
 wgpu-profiler = "0.22.0"
 winit = { workspace = true }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-web-sys = { version = "0.3.77", features = [
-    "ImageBitmap",
-    "HtmlCanvasElement",
-] }
-
 [dev-dependencies]
 any_spawner = { version = "0.2.0-rc3", features = ["futures-executor"] }
 criterion2 = "3.0.0"
 pollster = "0.4.0"
 
-[[bench]]
-harness = false
-name = "gpu_bench"
-
 [build-dependencies]
 wgsl_to_wgpu = { version = "0.13.0" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "0.3.77", features = [
+  "ImageBitmap",
+  "HtmlCanvasElement",
+] }
 
 [features]
 default = []

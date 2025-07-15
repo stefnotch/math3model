@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use renderer_core::game::TextureId;
+use render::game::TextureId;
 use serde::{Deserialize, Serialize};
 use tsify_next::Tsify;
 
@@ -39,9 +39,9 @@ pub struct WasmFrameTime {
     pub avg_gpu_time: f32,
 }
 
-impl From<WasmTransform> for renderer_core::transform::Transform {
+impl From<WasmTransform> for render::transform::Transform {
     fn from(v: WasmTransform) -> Self {
-        renderer_core::transform::Transform {
+        render::transform::Transform {
             position: v.position.into(),
             rotation: glam::Quat::from_euler(
                 glam::EulerRot::XYZ,
@@ -65,9 +65,9 @@ pub struct WasmMaterialInfo {
     pub texture_scale: [f32; 2],
 }
 
-impl From<WasmMaterialInfo> for renderer_core::game::MaterialInfo {
+impl From<WasmMaterialInfo> for render::game::MaterialInfo {
     fn from(v: WasmMaterialInfo) -> Self {
-        renderer_core::game::MaterialInfo {
+        render::game::MaterialInfo {
             color: v.color.into(),
             emissive: v.emissive.into(),
             roughness: v.roughness,

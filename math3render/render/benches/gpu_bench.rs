@@ -6,7 +6,7 @@ use criterion::{
 };
 use glam::Vec3;
 use pollster::FutureExt;
-use renderer_core::{
+use render::{
     game::{GameRes, ShaderId, ShaderInfo},
     local_executor::LocalExecutor,
     renderer::GpuApplicationBuilder,
@@ -38,13 +38,13 @@ fn main() {
         },
     );
 
-    app.update_models(vec![renderer_core::game::ModelInfo {
+    app.update_models(vec![render::game::ModelInfo {
         id: "0659dcb1-6229-46bd-a306-6ceebfcf2e42".into(),
-        transform: renderer_core::transform::Transform {
+        transform: render::transform::Transform {
             position: Vec3::new(0.0, 0.0, 0.0),
             ..Default::default()
         },
-        material_info: renderer_core::game::MaterialInfo {
+        material_info: render::game::MaterialInfo {
             color: Vec3::new(0.6, 1.0, 1.0),
             emissive: Vec3::new(0.0, 0.0, 0.0),
             roughness: 0.7,
@@ -99,8 +99,8 @@ fn main() {
             let dummy_set_0 = Default::default();
             let dummy_set_1 = Default::default();
             let dummy_set_2 = Default::default();
-            app.update(&renderer_core::input::WindowInputs {
-                mouse: renderer_core::input::WindowMouseInputs {
+            app.update(&render::input::WindowInputs {
+                mouse: render::input::WindowMouseInputs {
                     position: Default::default(),
                     position_delta: Default::default(),
                     motion: Default::default(),
@@ -108,7 +108,7 @@ fn main() {
                     inputs: Default::default(),
                     held: &dummy_set_0,
                 },
-                keyboard: renderer_core::input::WindowKeyboardInputs {
+                keyboard: render::input::WindowKeyboardInputs {
                     inputs: Default::default(),
                     physical_held: &dummy_set_1,
                     logical_held: &dummy_set_2,

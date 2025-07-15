@@ -1,6 +1,6 @@
 import { SceneFileName, SceneFileSchemaUrl } from "@/filesystem/scene-file";
 import { makeFilePath } from "@/filesystem/reactive-files";
-import DefaultParametric from "@/../parametric-renderer-core/shaders/DefaultParametric.wgsl?raw";
+import DefaultShaderCode from "../scenes/example-scene/default-shader.wgsl?raw";
 import { ReadonlyEulerAngles } from "./scene-state";
 import type { ImportFilesList } from "@/stores/fs-store";
 
@@ -31,7 +31,7 @@ export const DefaultScene: ImportFilesList = {
 
 export function createNewProject(): ImportFilesList {
   const shaderName = makeFilePath("my-shader.wgsl");
-  const shader = DefaultParametric;
+  const shader = DefaultShaderCode;
 
   const scene = {
     $schema: SceneFileSchemaUrl,

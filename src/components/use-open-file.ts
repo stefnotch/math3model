@@ -4,7 +4,7 @@ import type { KeyedCode, Marker } from "./CodeEditor.vue";
 import { MarkerSeverity } from "monaco-editor";
 import { useDebounceFn, watchImmediate } from "@vueuse/core";
 import { showError, showFileError } from "@/notification";
-import type { WasmCompilationMessage } from "parametric-renderer-core/pkg/web";
+import type { WasmCompilationMessage } from "math3render/pkg/web";
 
 export type EditorType = "shader";
 

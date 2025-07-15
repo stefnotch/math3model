@@ -1,6 +1,6 @@
 use glam::Vec3;
 use log::error;
-use renderer_core::{
+use render::{
     application::{AppCommand, Application, ShaderCompiledCallback, WasmCanvas, run_on_main},
     camera::{
         Angle,
@@ -51,7 +51,7 @@ impl WasmApplication {
         self.time_stats = application.time_stats.clone();
         application.app.profiler_settings.gpu = true;
         application.app.camera_controller = CameraController::new(
-            renderer_core::camera::orbitcam_controller::OrbitcamController {
+            render::camera::orbitcam_controller::OrbitcamController {
                 center: Vec3::ZERO,
                 pitch: Angle::from_degrees(-20.),
                 yaw: Angle::from_degrees(190.),

@@ -22,10 +22,7 @@ import {
 } from "@/filesystem/scene-file";
 import type { WgpuEngine } from "@/engine/wgpu-engine";
 import type { ObjectUpdate } from "./input/object-update";
-import type {
-  WasmFrameTime,
-  WasmModelInfo,
-} from "parametric-renderer-core/pkg/web";
+import type { WasmFrameTime, WasmModelInfo } from "math3render/pkg/web";
 import { useErrorStore } from "@/stores/error-store";
 import { syncFilesystem } from "@/engine/sync-filesystem";
 import { DefaultScene } from "@/scenes/default-scene";

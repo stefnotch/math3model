@@ -1,5 +1,5 @@
 use glam::{Vec2, Vec3};
-use renderer_core::{
+use render::{
     application::{AppCommand, Application, WasmCanvas},
     camera::camera_controller::{self, CameraController, IsCameraController},
     game::{MaterialInfo, ModelInfo, ShaderId, ShaderInfo},

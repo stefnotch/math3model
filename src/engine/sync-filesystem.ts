@@ -4,7 +4,7 @@ import {
   type ReactiveFilesystem,
 } from "@/filesystem/reactive-files";
 import type { WgpuEngine } from "./wgpu-engine";
-import DefaultShaderCode from "@/../parametric-renderer-core/shaders/DefaultParametric.wgsl?raw";
+import DefaultShaderCode from "../scenes/example-scene/default-shader.wgsl?raw";
 
 /**
  * Sync the filesystem with the Rust backend

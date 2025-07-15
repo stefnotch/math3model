@@ -4,7 +4,7 @@ mod config;
 use application::run;
 use env_logger::Env;
 use futures::executor::LocalPool;
-use renderer_core::local_executor::LocalExecutor;
+use render::local_executor::LocalExecutor;
 use std::sync::Arc;
 
 fn main() -> anyhow::Result<()> {
