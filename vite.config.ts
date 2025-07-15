@@ -41,9 +41,8 @@ const config: UserConfig = defineConfig({
     watch: {
       ignored: [
         "**/math3render/target/**",
+        "**/math3render/node_modules/**",
         "**/math3render/desktop/**",
-        "**/math3render/render/**",
-        "**/math3render/wasm/**",
       ],
     },
   },

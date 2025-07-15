@@ -217,7 +217,7 @@ impl WindowInputCollector {
         }
     }
 
-    pub fn step(&mut self) -> WindowInputs {
+    pub fn step(&mut self) -> WindowInputs<'_> {
         let cursor_delta = (
             self.end_cursor_position.x - self.start_cursor_position.x,
             self.end_cursor_position.y - self.start_cursor_position.y,

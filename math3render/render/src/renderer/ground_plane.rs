@@ -1,7 +1,7 @@
 use reactive_graph::{
     computed::Memo,
     signal::RwSignal,
-    traits::{Read, Set},
+    traits::Read,
 };
 
 use crate::{
@@ -22,6 +22,7 @@ pub fn ground_plane_component(
 
     #[cfg(feature = "desktop")]
     let _file_watcher = {
+        use reactive_graph::Traits::Set;
         let source_path = "./shaders/GroundPlane.wgsl";
         let mut file_watcher = notify_debouncer_full::new_debouncer(
             std::time::Duration::from_millis(1000),
