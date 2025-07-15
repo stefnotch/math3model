@@ -1,6 +1,6 @@
-import type { FilePath } from "@/filesystem/reactive-files";
-import { sceneFilesPromise } from "@/globals";
-import type { WasmCompilationMessage } from "math3render/pkg/web";
+import type { FilePath } from "@/filesystem/reactive-files.ts";
+import { sceneFilesPromise } from "@/globals.ts";
+import type { WasmCompilationMessage } from "math3render/pkg/web.js";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { computed, reactive } from "vue";
 

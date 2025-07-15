@@ -1,5 +1,5 @@
-import type { ImportFilesList } from "@/stores/fs-store";
-import { DefaultScene, fileName } from "./default-scene";
+import type { ImportFilesList } from "@/stores/fs-store.ts";
+import { DefaultScene, fileName } from "./default-scene.ts";
 
 type ExampleProject = {
   key: string;

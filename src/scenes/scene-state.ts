@@ -3,10 +3,10 @@ import {
   SceneFileSchemaUrl,
   type SerializedModel,
   type SerializedScene,
-} from "@/filesystem/scene-file";
-import { makeFilePath, type FilePath } from "@/filesystem/reactive-files";
+} from "@/filesystem/scene-file.ts";
+import { makeFilePath, type FilePath } from "@/filesystem/reactive-files.ts";
 import { assert } from "@stefnotch/typestef/assert";
-import type { ObjectUpdate } from "@/components/input/object-update";
+import type { ObjectUpdate } from "@/components/input/object-update.ts";
 
 export class ReadonlyVector3 {
   constructor(

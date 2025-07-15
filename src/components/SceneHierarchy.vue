@@ -3,20 +3,20 @@ import {
   ReadonlyEulerAngles,
   ReadonlyVector3,
   type VirtualModelState,
-} from "@/scenes/scene-state";
+} from "@/scenes/scene-state.ts";
 import { computed, h, ref, watch, watchEffect, type DeepReadonly } from "vue";
 import { NButton, NInput, NText, type UploadFileInfo } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import NumberInput from "@/components/input/NumberInput.vue";
 import VectorInput from "@/components/input/VectorInput.vue";
 import EulerInput from "@/components/input/EulerInput.vue";
-import { showError } from "@/notification";
-import { commonModelState } from "@/scenes/aggregrate-model-state";
+import { showError } from "@/notification.ts";
+import { commonModelState } from "@/scenes/aggregrate-model-state.ts";
 import {
   type FilePath,
   makeFilePath,
   ReactiveFilesystem,
-} from "@/filesystem/reactive-files";
+} from "@/filesystem/reactive-files.ts";
 import {
   NodeTreeHelper,
   makeSelectionGeneration,
@@ -24,8 +24,8 @@ import {
   type SelectionGeneration,
   type TreeNode,
   type TreeSelection,
-} from "./node-tree/NodeTreeHelper";
-import { ObjectUpdate, type ObjectPathPart } from "./input/object-update";
+} from "./node-tree/NodeTreeHelper.ts";
+import { ObjectUpdate, type ObjectPathPart } from "./input/object-update.ts";
 import { computedAsync } from "@vueuse/core";
 
 const props = defineProps<{

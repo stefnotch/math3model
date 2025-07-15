@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useStore } from "@/stores/store";
+import { useStore } from "@/stores/store.ts";
 import type { DropdownOption } from "naive-ui/es/dropdown/src/interface";
 import { computed, h, ref } from "vue";
 import IconMoon from "~icons/mdi/moon-and-stars";
@@ -7,9 +7,9 @@ import IconSun from "~icons/mdi/white-balance-sunny";
 import IconGithub from "~icons/mdi/github";
 import IconDocumentation from "~icons/mdi/book";
 import { homepage, version } from "@/../package.json";
-import { useFsStore } from "@/stores/fs-store";
-import { ExampleProjects } from "@/scenes/example-scenes";
-import { createNewProject } from "@/scenes/default-scene";
+import { useFsStore } from "@/stores/fs-store.ts";
+import { ExampleProjects } from "@/scenes/example-scenes.ts";
+import { createNewProject } from "@/scenes/default-scene.ts";
 import { NText } from "naive-ui";
 
 const store = useStore();

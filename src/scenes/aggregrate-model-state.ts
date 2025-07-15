@@ -1,9 +1,9 @@
-import { makeFilePath, type FilePath } from "@/filesystem/reactive-files";
+import { makeFilePath, type FilePath } from "@/filesystem/reactive-files.ts";
 import {
   ReadonlyEulerAngles,
   ReadonlyVector3,
   type VirtualModelState,
-} from "@/scenes/scene-state";
+} from "@/scenes/scene-state.ts";
 import { assertUnreachable } from "@stefnotch/typestef/assert";
 
 export function commonModelState(

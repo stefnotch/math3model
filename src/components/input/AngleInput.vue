@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import NumberInput from "./NumberInput.vue";
-import { ObjectUpdate } from "./object-update";
+import { ObjectUpdate } from "./object-update.ts";
 
 const props = defineProps<{
   value: number;

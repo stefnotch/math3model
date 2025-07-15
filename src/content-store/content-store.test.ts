@@ -3,8 +3,8 @@ import {
   ContentStore,
   undoContentAction,
   type ContentAction,
-} from "./content-store";
-import { ContentFile } from "./content-file";
+} from "./content-store.ts";
+import { ContentFile } from "./content-file.ts";
 
 test("undo(undo(v)) == v", () => {
   const action: ContentAction = {

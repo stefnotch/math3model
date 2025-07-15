@@ -2,8 +2,8 @@ import "./assets/main.css";
 
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { showError } from "@/notification";
-import "@/monaco-setup";
+import { showError } from "@/notification.ts";
+import "@/monaco-setup.ts";
 
 import App from "./App.vue";
 

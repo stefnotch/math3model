@@ -5,7 +5,7 @@ import {
   NodeTreeHelper,
   type TreeNode,
   type TreeSelection,
-} from "./NodeTreeHelper";
+} from "./NodeTreeHelper.ts";
 import { useThemeVars } from "naive-ui";
 
 const themeVars = useThemeVars();

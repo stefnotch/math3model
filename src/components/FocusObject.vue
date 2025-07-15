@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { WgpuEngine } from "@/engine/wgpu-engine";
-import type { VirtualModelState } from "@/scenes/scene-state";
+import type { WgpuEngine } from "@/engine/wgpu-engine.ts";
+import type { VirtualModelState } from "@/scenes/scene-state.ts";
 import type { SelectOption } from "naive-ui";
 import { computed, type DeepReadonly } from "vue";
 

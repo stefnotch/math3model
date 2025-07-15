@@ -3,9 +3,9 @@ import {
   type DialogApi,
   type NotificationApi,
 } from "naive-ui";
-import type { FilePath } from "./filesystem/reactive-files";
-import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider";
-import type { LoadingBarInst } from "naive-ui/es/loading-bar/src/LoadingBarProvider";
+import type { FilePath } from "./filesystem/reactive-files.ts";
+import type { MessageApiInjection } from "naive-ui/es/message/src/MessageProvider.ts";
+import type { LoadingBarInst } from "naive-ui/es/loading-bar/src/LoadingBarProvider.ts";
 
 const dest = createDiscreteApi([
   "message",

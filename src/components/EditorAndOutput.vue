@@ -2,34 +2,34 @@
 import CodeEditor from "@/components/CodeEditor.vue";
 import { ref, watchEffect, h, onUnmounted, computed } from "vue";
 import { useLocalStorage, watchImmediate } from "@vueuse/core";
-import { useStore } from "@/stores/store";
+import { useStore } from "@/stores/store.ts";
 import {
   ReactiveFilesystem,
   makeFilePath,
   type FilePath,
-} from "@/filesystem/reactive-files";
-import { showError, showFileError } from "@/notification";
+} from "@/filesystem/reactive-files.ts";
+import { showError, showFileError } from "@/notification.ts";
 import {
   ReadonlyEulerAngles,
   ReadonlyVector3,
   useVirtualScene,
   type VirtualModelState,
-} from "@/scenes/scene-state";
+} from "@/scenes/scene-state.ts";
 import {
   deserializeScene,
   SceneFileName,
   serializeScene,
-} from "@/filesystem/scene-file";
-import type { WgpuEngine } from "@/engine/wgpu-engine";
-import type { ObjectUpdate } from "./input/object-update";
+} from "@/filesystem/scene-file.ts";
+import type { WgpuEngine } from "@/engine/wgpu-engine.ts";
+import type { ObjectUpdate } from "./input/object-update.ts";
 import type { WasmFrameTime, WasmModelInfo } from "math3render/pkg/web";
-import { useErrorStore } from "@/stores/error-store";
-import { syncFilesystem } from "@/engine/sync-filesystem";
-import { DefaultScene } from "@/scenes/default-scene";
+import { useErrorStore } from "@/stores/error-store.ts";
+import { syncFilesystem } from "@/engine/sync-filesystem.ts";
+import { DefaultScene } from "@/scenes/default-scene.ts";
 import FocusObject from "./FocusObject.vue";
 import DefaultShader from "../scenes/example-scene/default-shader.wgsl?raw";
-import { useOpenFile } from "./use-open-file";
-import { useFsStore } from "@/stores/fs-store";
+import { useOpenFile } from "./use-open-file.ts";
+import { useFsStore } from "@/stores/fs-store.ts";
 
 // Unchanging props! No need to watch them.
 const props = defineProps<{

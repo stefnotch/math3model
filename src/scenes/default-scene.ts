@@ -1,8 +1,8 @@
-import { SceneFileName, SceneFileSchemaUrl } from "@/filesystem/scene-file";
-import { makeFilePath } from "@/filesystem/reactive-files";
+import { SceneFileName, SceneFileSchemaUrl } from "@/filesystem/scene-file.ts";
+import { makeFilePath } from "@/filesystem/reactive-files.ts";
 import DefaultShaderCode from "../scenes/example-scene/default-shader.wgsl?raw";
-import { ReadonlyEulerAngles } from "./scene-state";
-import type { ImportFilesList } from "@/stores/fs-store";
+import { ReadonlyEulerAngles } from "./scene-state.ts";
+import type { ImportFilesList } from "@/stores/fs-store.ts";
 
 import sceneJson from "./example-scene/heart-sphere-morph/scene.json?raw";
 import heartSphereWgsl from "./example-scene/heart-sphere-morph/heart-sphere.wgsl?raw";

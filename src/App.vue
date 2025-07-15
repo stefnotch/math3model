@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { darkTheme, lightTheme } from "naive-ui";
-import { useStore } from "./stores/store";
+import { useStore } from "./stores/store.ts";
 import { computed } from "vue";
-import { useFsStore } from "./stores/fs-store";
+import { useFsStore } from "./stores/fs-store.ts";
 import HomeView from "./views/HomeView.vue";
 
 const store = useStore();

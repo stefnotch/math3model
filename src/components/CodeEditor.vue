@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
 import { computed, ref, shallowRef, watch, type DeepReadonly } from "vue";
 import { watchDebounced, useElementSize } from "@vueuse/core";
-import type { FilePath } from "@/filesystem/reactive-files";
-import { showInfo } from "@/notification";
+import type { FilePath } from "@/filesystem/reactive-files.ts";
+import { showInfo } from "@/notification.ts";
 
 export type Marker = monaco.editor.IMarkerData;
 

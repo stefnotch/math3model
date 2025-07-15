@@ -10,7 +10,7 @@ import {
   type SelectionGeneration,
   type TreeNode,
   type TreeSelection,
-} from "./NodeTreeHelper";
+} from "./NodeTreeHelper.ts";
 
 const props = defineProps<{
   root: TreeNode;

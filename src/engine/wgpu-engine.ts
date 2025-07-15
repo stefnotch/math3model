@@ -4,7 +4,7 @@ import init, {
   type WasmShaderInfo,
   type WasmCompilationMessage,
   type WasmFrameTime,
-} from "../../math3render/pkg";
+} from "../../math3render/pkg/web.js";
 
 await init();
 

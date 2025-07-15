@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ObjectUpdate } from "./object-update";
+import { ObjectUpdate } from "./object-update.ts";
 import { useThrottleFn } from "@vueuse/core";
 import { rgba, toHexString } from "seemly";
-import { ReadonlyVector3 } from "@/scenes/scene-state";
+import { ReadonlyVector3 } from "@/scenes/scene-state.ts";
 import { computed } from "vue";
 
 const props = defineProps<{

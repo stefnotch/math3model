@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { ObjectUpdate } from "./object-update";
+import { ObjectUpdate } from "./object-update.ts";
 import { useThrottleFn } from "@vueuse/core";
 
 const props = defineProps<{

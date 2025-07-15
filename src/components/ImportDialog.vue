@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ImportProjectDialog } from "@/stores/fs-store";
+import type { ImportProjectDialog } from "@/stores/fs-store.ts";
 
 const props = defineProps<{
   dialog: ImportProjectDialog;

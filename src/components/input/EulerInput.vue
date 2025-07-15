@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AngleInput from "./AngleInput.vue";
-import type { ObjectUpdate } from "./object-update";
-import { VectorLabels } from "./vector-labels";
+import type { ObjectUpdate } from "./object-update.ts";
+import { VectorLabels } from "./vector-labels.ts";
 
 const props = defineProps<{
   value: [number, number, number];

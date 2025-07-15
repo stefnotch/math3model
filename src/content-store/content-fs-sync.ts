@@ -1,6 +1,6 @@
 import { assertUnreachable } from "@stefnotch/typestef/assert";
-import { ContentFile, fileNameToType } from "./content-file";
-import { ContentStore } from "./content-store";
+import { ContentFile, fileNameToType } from "./content-file.ts";
+import { ContentStore } from "./content-store.ts";
 import { setInterval } from "node:timers";
 
 /** Loads everything from the FS into the content store, and then periodically syncs it back to the FS. */

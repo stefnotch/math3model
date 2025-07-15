@@ -10,12 +10,12 @@ import {
   type SelectionGeneration,
   type TreeNode,
   type TreeSelection,
-} from "./node-tree/NodeTreeHelper";
+} from "./node-tree/NodeTreeHelper.ts";
 import {
   makeFilePath,
   type FilePath,
   type ReactiveFilesystem,
-} from "@/filesystem/reactive-files";
+} from "@/filesystem/reactive-files.ts";
 
 const props = defineProps<{
   fs: ReactiveFilesystem;

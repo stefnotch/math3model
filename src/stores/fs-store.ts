@@ -3,8 +3,8 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import {
   makeFilePath,
   type ReactiveFilesystem,
-} from "@/filesystem/reactive-files";
-import { sceneFilesPromise } from "@/globals";
+} from "@/filesystem/reactive-files.ts";
+import { sceneFilesPromise } from "@/globals.ts";
 import {
   BlobReader,
   BlobWriter,
@@ -12,7 +12,7 @@ import {
   ZipReader,
   ZipWriter,
 } from "@zip.js/zip.js";
-import { SceneFileName } from "@/filesystem/scene-file";
+import { SceneFileName } from "@/filesystem/scene-file.ts";
 import { assertUnreachable } from "@stefnotch/typestef/assert";
 
 /**

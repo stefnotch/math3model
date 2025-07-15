@@ -2,8 +2,8 @@ import {
   getFileExtension,
   type FilePath,
   type ReactiveFilesystem,
-} from "@/filesystem/reactive-files";
-import type { WgpuEngine } from "./wgpu-engine";
+} from "@/filesystem/reactive-files.ts";
+import type { WgpuEngine } from "./wgpu-engine.ts";
 import DefaultShaderCode from "../scenes/example-scene/default-shader.wgsl?raw";
 
 /**

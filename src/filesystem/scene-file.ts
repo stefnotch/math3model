@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { makeFilePath } from "./reactive-files";
+import { makeFilePath } from "./reactive-files.ts";
 
 // Warning:
 // Changes to this file mean that you could be breaking someone's scene out there!

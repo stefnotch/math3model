@@ -1,4 +1,4 @@
-import { FineMap, type MapChange } from "@/fine-collections";
+import { FineMap, type MapChange } from "@/fine-collections.ts";
 import { type WatchStopHandle, type WatchOptions } from "vue";
 
 export interface ReadonlyFiles {

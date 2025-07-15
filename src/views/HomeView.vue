@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ReactiveFilesystem } from "@/filesystem/reactive-files";
+import { ReactiveFilesystem } from "@/filesystem/reactive-files.ts";
 import { markRaw, shallowRef } from "vue";
-import { sceneFilesPromise, takeCanvas } from "@/globals";
-import { WgpuEngine } from "@/engine/wgpu-engine";
+import { sceneFilesPromise, takeCanvas } from "@/globals.ts";
+import { WgpuEngine } from "@/engine/wgpu-engine.ts";
 
 const sceneFiles = shallowRef<ReactiveFilesystem | null>(null);
 sceneFilesPromise.then((v) => {

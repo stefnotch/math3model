@@ -1,6 +1,6 @@
 import { assert, assertUnreachable } from "@stefnotch/typestef/assert";
 import arrayUtils from "@stefnotch/typestef/array-utils";
-import { ContentFile } from "./content-file";
+import { ContentFile } from "./content-file.ts";
 
 export interface ContentActionLimits {
   /** How many actions do we track.

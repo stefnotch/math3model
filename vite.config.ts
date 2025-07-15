@@ -5,6 +5,7 @@ import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import checker from "vite-plugin-checker";
 import tailwindcss from "@tailwindcss/vite";
+import wasmBindgenPlugin from "./src/wasm-bindgen-plugin.ts";
 
 import { defineConfig, UserConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
@@ -13,6 +14,7 @@ import vue from "@vitejs/plugin-vue";
 const config: UserConfig = defineConfig({
   base: "./",
   plugins: [
+    wasmBindgenPlugin(),
     tailwindcss(),
     vue(),
     Icons(),
@@ -27,6 +29,7 @@ const config: UserConfig = defineConfig({
     }),
   ],
   resolve: {
+    extensions: [],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
