@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ReactiveFilesystem } from "@/filesystem/reactive-files";
-import { GpuDevicePromise } from "@/webgpu-hook";
 import { markRaw, shallowRef } from "vue";
 import { sceneFilesPromise, takeCanvas } from "@/globals";
 import { WgpuEngine } from "@/engine/wgpu-engine";
@@ -17,22 +16,15 @@ if (canvasElement === null) {
 const engine = shallowRef<WgpuEngine>(
   markRaw(WgpuEngine.createEngine(canvasElement))
 );
-const gpuDevice = shallowRef<GPUDevice | null>(null);
-GpuDevicePromise.then((v) => {
-  gpuDevice.value = markRaw(v);
-});
 </script>
 
 <template>
-  <template
-    v-if="sceneFiles !== null && canvasElement !== null && gpuDevice !== null"
-  >
+  <template v-if="sceneFiles !== null && canvasElement !== null">
     <Suspense>
       <EditorAndOutput
         :fs="sceneFiles"
         :canvas="canvasElement"
         :engine="engine"
-        :gpuDevice="gpuDevice"
       ></EditorAndOutput>
 
       <template #fallback>

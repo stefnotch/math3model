@@ -5,35 +5,16 @@
       "type": "model",
       "id": "9566ae5a-d346-48ed-848f-3df0c0ebc88b",
       "name": "TowerBase",
-      "position": [
-        0,
-        7,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
+      "position": [0, 7, 0],
+      "rotation": [0, 0, 0],
       "scale": 1,
       "parametricShader": "TowerBase.wgsl",
       "material": {
-        "color": [
-          0.2549019607843137,
-          0.2549019607843137,
-          0.2549019607843137
-        ],
+        "color": [0.2549019607843137, 0.2549019607843137, 0.2549019607843137],
         "roughness": 0.5249958444386076,
         "metallic": 0.11988484482410443,
-        "emissive": [
-          0,
-          0,
-          0
-        ],
-        "textureScale": [
-          1,
-          1
-        ]
+        "emissive": [0, 0, 0],
+        "textureScale": [1, 1]
       },
       "instanceCount": 1
     },
@@ -41,35 +22,18 @@
       "type": "model",
       "id": "68afb42f-e881-4ff2-9f85-35016a076978",
       "name": "TowerRoofNew",
-      "position": [
-        0,
-        18,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
+      "position": [0, 18, 0],
+      "rotation": [0, 0, 0],
       "scale": 1,
-      "parametricShader": "TowerTop.graph.wgsl",
+      "parametricShader": "TowerTop.wgsl",
       "material": {
         "color": [
-          0.17254901960784313,
-          0.17254901960784313,
-          0.17254901960784313
+          0.17254901960784313, 0.17254901960784313, 0.17254901960784313
         ],
         "roughness": 0.699560777629391,
         "metallic": 0.8792430082637261,
-        "emissive": [
-          0,
-          0,
-          0
-        ],
-        "textureScale": [
-          1,
-          1
-        ]
+        "emissive": [0, 0, 0],
+        "textureScale": [1, 1]
       },
       "instanceCount": 1
     }

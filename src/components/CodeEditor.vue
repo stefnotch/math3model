@@ -21,7 +21,7 @@ const props = defineProps<{
   markers: monaco.editor.IMarkerData[];
   isReadonly: boolean;
 }>();
-const emit = defineEmits<{ update: [code: () => string]; graph: [] }>();
+const emit = defineEmits<{ update: [code: () => string] }>();
 
 const editor = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -108,22 +108,6 @@ watch(monacoMount, (element) => {
       class="border border-gray-500 self-stretch flex-1 overflow-hidden"
       :class="{ 'bg-gray-800': isReadonly }"
     ></div>
-    <div
-      class="absolute top-2 right-2"
-      v-if="props.keyedCode?.name.includes('.graph')"
-    >
-      <n-button
-        quaternary
-        circle
-        type="primary"
-        @click="emit('graph')"
-        class="text-xl"
-      >
-        <template #icon>
-          <n-icon size="32px"><mdi-transit-connection-variant /></n-icon>
-        </template>
-      </n-button>
-    </div>
   </div>
 </template>
 <style scoped></style>

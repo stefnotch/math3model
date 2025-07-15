@@ -15,29 +15,22 @@ import {
   useVirtualScene,
   type VirtualModelState,
 } from "@/scenes/scene-state";
-import { assertUnreachable } from "@stefnotch/typestef/assert";
 import {
   deserializeScene,
   SceneFileName,
   serializeScene,
 } from "@/filesystem/scene-file";
 import type { WgpuEngine } from "@/engine/wgpu-engine";
-import HeartSphereCode from "@/../parametric-renderer-core/shaders/HeartSphere.wgsl?raw";
-import BasicGraph from "@/../parametric-renderer-core/graphs/BasicGraph.graph?raw";
-import BasicGraphShader from "@/../parametric-renderer-core/graphs/BasicGraphShader.graph.wgsl?raw";
 import type { ObjectUpdate } from "./input/object-update";
-import CodeGraph from "@/components/visual-programming/CodeGraph.vue";
 import type {
   WasmFrameTime,
   WasmModelInfo,
 } from "parametric-renderer-core/pkg/web";
 import { useErrorStore } from "@/stores/error-store";
 import { syncFilesystem } from "@/engine/sync-filesystem";
-import { useExportStore } from "@/stores/export-store";
 import { DefaultScene } from "@/scenes/default-scene";
 import FocusObject from "./FocusObject.vue";
-
-import WebGpu from "@/components/WebGpu.vue";
+import DefaultShader from "../scenes/example-scene/default-shader.wgsl?raw";
 import { useOpenFile } from "./use-open-file";
 import { useFsStore } from "@/stores/fs-store";
 
@@ -46,7 +39,6 @@ const props = defineProps<{
   fs: ReactiveFilesystem;
   canvas: HTMLCanvasElement;
   engine: WgpuEngine;
-  gpuDevice: GPUDevice;
 }>();
 
 syncFilesystem(props.fs, props.engine);
@@ -212,15 +204,7 @@ function addModel(name: string, shaderName: string) {
     let vertexSource = makeFilePath(shaderName);
 
     if (!props.fs.hasFile(vertexSource)) {
-      if (vertexSource.endsWith(".wgsl"))
-        props.fs.writeTextFile(vertexSource, HeartSphereCode);
-      else if (vertexSource.endsWith(".graph")) {
-        props.fs.writeTextFile(vertexSource, BasicGraph);
-        vertexSource = makeFilePath(
-          vertexSource.replace(".graph", ".graph.wgsl")
-        );
-        props.fs.writeTextFile(vertexSource, BasicGraphShader);
-      }
+      props.fs.writeTextFile(vertexSource, DefaultShader);
     }
 
     const newModel: VirtualModelState = {
@@ -257,20 +241,6 @@ function removeModel(ids: string[]) {
 
   saveScene();
 }
-
-function saveGraphWgsl(filePath: FilePath, content: string) {
-  // Extension should be ".graph.wgsl"
-  filePath = makeFilePath(filePath.replace(".graph", ".graph.wgsl"));
-  props.fs.writeTextFile(filePath, content);
-}
-const exportStore = useExportStore();
-
-watchImmediate(
-  () => exportStore.isExportMode,
-  (isExport) => {
-    if (!isExport) props.engine.setLodStage(null);
-  }
-);
 </script>
 
 <template>
@@ -386,14 +356,7 @@ watchImmediate(
           </template>
           <template #2>
             <div class="h-full w-full">
-              <WebGpu
-                v-if="exportStore.isExportMode"
-                :gpuDevice="props.gpuDevice"
-                :engine="props.engine"
-                :fs="props.fs"
-              ></WebGpu>
               <EditorTab
-                v-else
                 :title="openFile.code.value?.name ?? 'No file opened'"
                 class="h-full"
               >
@@ -405,48 +368,8 @@ watchImmediate(
                   :is-dark="store.isDark"
                   :markers="openFile.markers.value"
                   @update="openFile.setNewCode($event)"
-                  @graph="
-                    openFile.openFile(
-                      makeFilePath(
-                        openFile.path.value?.replace('.wgsl', '') ?? ''
-                      )
-                    )
-                  "
                 >
                 </CodeEditor>
-                <CodeGraph
-                  v-else-if="openFile.editorType.value === 'graph'"
-                  :fs="props.fs"
-                  :keyedGraph="openFile.code.value"
-                  :engine="props.engine"
-                  :models="scene.state.value.models"
-                  @update="
-                    (content) => {
-                      if (openFile.path.value !== null) {
-                        saveGraphWgsl(openFile.path.value, content);
-                      } else {
-                        console.error('Invalid state!');
-                      }
-                    }
-                  "
-                  @save="
-                    (content) => {
-                      if (openFile.path.value !== null) {
-                        openFile.setNewCode(() => content);
-                      } else {
-                        console.error('Invalid state!');
-                      }
-                    }
-                  "
-                  @code="
-                    () => {
-                      openFile.openFile(
-                        makeFilePath(openFile.path.value + '.wgsl')
-                      );
-                    }
-                  "
-                  ref="graphRef"
-                ></CodeGraph>
               </EditorTab>
             </div>
           </template>
@@ -455,5 +378,3 @@ watchImmediate(
     </n-split>
   </main>
 </template>
-
-<style scoped></style>

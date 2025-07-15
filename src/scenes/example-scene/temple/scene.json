@@ -5,36 +5,17 @@
       "type": "model",
       "id": "0c059d05-5702-4668-98d5-7115cae37a1d",
       "name": "TempleRoof",
-      "position": [
-        5.699999999999999,
-        13.900000000000002,
-        4.95
-      ],
-      "rotation": [
-        0,
-        0,
-        3.141592653589793
-      ],
+      "position": [5.699999999999999, 13.900000000000002, 4.95],
+      "rotation": [0, 0, 3.141592653589793],
       "scale": 1,
-      "parametricShader": "TempleRoof.graph.wgsl",
+      "parametricShader": "TempleRoof.wgsl",
       "material": {
-        "color": [
-          0.9294117647058824,
-          0.9294117647058824,
-          0.8666666666666667
-        ],
+        "color": [0.9294117647058824, 0.9294117647058824, 0.8666666666666667],
         "roughness": 0.5037068901407168,
         "metallic": 0.05321885493196326,
-        "emissive": [
-          0,
-          0,
-          0
-        ],
+        "emissive": [0, 0, 0],
         "diffuseTexture": "marble.jpg",
-        "textureScale": [
-          1.56,
-          0.5299999999999988
-        ]
+        "textureScale": [1.56, 0.5299999999999988]
       },
       "instanceCount": 1
     },
@@ -42,36 +23,17 @@
       "type": "model",
       "id": "08d5fa1e-bb84-4e7d-9eb1-a7282987f139",
       "name": "TempleColumns",
-      "position": [
-        0,
-        1,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
+      "position": [0, 1, 0],
+      "rotation": [0, 0, 0],
       "scale": 1,
-      "parametricShader": "TempleColumns512025_122219_AM.graph.wgsl",
+      "parametricShader": "TempleColumns.wgsl",
       "material": {
-        "color": [
-          0.9882352941176471,
-          0.9882352941176471,
-          0.9882352941176471
-        ],
+        "color": [0.9882352941176471, 0.9882352941176471, 0.9882352941176471],
         "roughness": 0.1663611261235766,
         "metallic": 0.1,
-        "emissive": [
-          0,
-          0,
-          0
-        ],
+        "emissive": [0, 0, 0],
         "diffuseTexture": "marble.jpg",
-        "textureScale": [
-          1,
-          1
-        ]
+        "textureScale": [1, 1]
       },
       "instanceCount": 8
     },
@@ -79,36 +41,17 @@
       "type": "model",
       "id": "65a23c99-a5d9-438e-9847-a71ceeffe0c8",
       "name": "TempleBody",
-      "position": [
-        8.000000000000004,
-        1,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
+      "position": [8.000000000000004, 1, 0],
+      "rotation": [0, 0, 0],
       "scale": 1,
-      "parametricShader": "New_Model512025_125752_AM.graph.wgsl",
+      "parametricShader": "TempleBody.wgsl",
       "material": {
-        "color": [
-          0.7098039215686275,
-          0.7019607843137254,
-          0.7019607843137254
-        ],
+        "color": [0.7098039215686275, 0.7019607843137254, 0.7019607843137254],
         "roughness": 0.4777508046071641,
         "metallic": 0.39797224525705743,
-        "emissive": [
-          0,
-          0,
-          0
-        ],
+        "emissive": [0, 0, 0],
         "diffuseTexture": "marble.jpg",
-        "textureScale": [
-          2.8,
-          1
-        ]
+        "textureScale": [2.8, 1]
       },
       "instanceCount": 1
     },
@@ -116,36 +59,19 @@
       "type": "model",
       "id": "d2fc9a96-4a24-41e9-b465-3bc96ca38f04",
       "name": "TempleSteps",
-      "position": [
-        -11.699999999999998,
-        -1.5,
-        -10.4
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
+      "position": [-11.699999999999998, -1.5, -10.4],
+      "rotation": [0, 0, 0],
       "scale": 1,
-      "parametricShader": "TempleSteps352025_094631.wgsl",
+      "parametricShader": "TempleSteps.wgsl",
       "material": {
         "color": [
-          0.24313725490196078,
-          0.24313725490196078,
-          0.24313725490196078
+          0.24313725490196078, 0.24313725490196078, 0.24313725490196078
         ],
         "roughness": 0.5323048473437256,
         "metallic": 1.1300294729903955,
-        "emissive": [
-          0,
-          0,
-          0
-        ],
+        "emissive": [0, 0, 0],
         "diffuseTexture": "marble.jpg",
-        "textureScale": [
-          1,
-          1
-        ]
+        "textureScale": [1, 1]
       },
       "instanceCount": 1
     }

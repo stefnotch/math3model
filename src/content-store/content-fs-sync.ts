@@ -87,11 +87,7 @@ async function syncFiles(toSync: FilesToSync) {
 /** Returns whether this is a text file or not. */
 function isTextFile(name: string): boolean | null {
   const contentType = fileNameToType(name);
-  if (
-    contentType.kind === "graph" ||
-    contentType.kind === "shader" ||
-    contentType.kind === "json"
-  ) {
+  if (contentType.kind === "shader" || contentType.kind === "json") {
     return true;
   } else if (contentType.kind === "image") {
     return false;

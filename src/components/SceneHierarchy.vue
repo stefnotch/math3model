@@ -26,10 +26,8 @@ import {
   type TreeSelection,
 } from "./node-tree/NodeTreeHelper";
 import { ObjectUpdate, type ObjectPathPart } from "./input/object-update";
-import { useExportStore } from "@/stores/export-store";
 import { computedAsync } from "@vueuse/core";
 
-const exportStore = useExportStore();
 const props = defineProps<{
   models: DeepReadonly<VirtualModelState>[];
   fs: ReactiveFilesystem;
@@ -130,9 +128,6 @@ watchEffect(() => {
     if (model) {
       currentModel.value = model;
       let selectVal = model.code;
-      if (model.code.endsWith(".wgsl") && model.code.includes(".graph")) {
-        selectVal = makeFilePath(model.code.replace(".wgsl", ""));
-      }
       emit("select", selectVal);
     }
   } else if (keys.length > 1) {
@@ -262,7 +257,7 @@ function startAddModel() {
   }
 }
 
-function addModelNew(fileEnd: "wgsl" | "graph") {
+function addModelNew() {
   if (!toAddModel.value) {
     showError("Illegal State!");
     return;
@@ -277,13 +272,10 @@ function addModelNew(fileEnd: "wgsl" | "graph") {
       .replaceAll(",", "")
       .replaceAll("/", "")
       .replaceAll("\\", "")
-      .replaceAll("-", "_") +
-      "." +
-      fileEnd
+      .replaceAll("-", "_") + ".wgsl"
   );
   emit("addModel", toAddModel.value[0], toAddModel.value[1]);
   isAdding.value = false;
-  //toAddModel.value = null;
 }
 
 function removeModel() {
@@ -305,10 +297,6 @@ function onNodeSelect(path: NodePath, value: [SelectionGeneration, boolean]) {
   if (node !== null) {
     node.isSelected = value;
   }
-}
-
-function toggleExportUI() {
-  exportStore.isExportMode = !exportStore.isExportMode;
 }
 
 function uploadFile(data: {
@@ -343,21 +331,11 @@ function uploadFile(data: {
                 provided. Pick this option if you have advanced knowledge in
                 programming.
               </n-text>
-              <n-text>
-                Create a graph-based model, if you want a more restricted
-                option. A visual scripting tool, where you connect predefined
-                nodes with each other will be provided. Pick this option if you
-                have little to no programming experience. Some complex
-                functionality is available for more experienced programmers.
-              </n-text>
             </n-flex>
             <n-text type="info">optional enter model name</n-text>
             <n-input v-model:value="toAddModel[0]"></n-input>
             <n-flex justify="end">
-              <n-button type="info" @click="addModelNew('graph')"
-                >New Graph</n-button
-              >
-              <n-button type="primary" @click="addModelNew('wgsl')"
+              <n-button type="primary" @click="addModelNew()"
                 >New Code</n-button
               >
             </n-flex>
@@ -383,12 +361,6 @@ function uploadFile(data: {
             <mdi-trash />
           </TooltippedIconButton>
           <n-divider vertical style="margin: -10px 12px 0px 12px"></n-divider>
-          <TooltippedIconButton
-            tooltip="Export scene"
-            @click="toggleExportUI()"
-          >
-            <mdi-export-variant />
-          </TooltippedIconButton>
         </span>
       </n-space>
 

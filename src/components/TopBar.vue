@@ -8,14 +8,12 @@ import IconGithub from "~icons/mdi/github";
 import IconDocumentation from "~icons/mdi/book";
 import { homepage, version } from "@/../package.json";
 import { useFsStore } from "@/stores/fs-store";
-import { useExportStore } from "@/stores/export-store";
 import { ExampleProjects } from "@/scenes/example-scenes";
 import { createNewProject } from "@/scenes/default-scene";
 import { NText } from "naive-ui";
 
 const store = useStore();
 const fsStore = useFsStore();
-const exportStore = useExportStore();
 
 type ActionDropdownOption = DropdownOption & {
   action: () => void;
@@ -75,18 +73,6 @@ const fileOptions = computed((): ActionDropdownOption[] => {
       key: "examples",
       children: exampleProjectsDropdown,
       action: () => {},
-    },
-  ];
-});
-
-const exportOptions = computed((): ActionDropdownOption[] => {
-  return [
-    {
-      label: "Export Scene",
-      key: "export",
-      action: () => {
-        exportStore.isExportMode = !exportStore.isExportMode;
-      },
     },
   ];
 });
@@ -174,15 +160,6 @@ async function openFiles(inputFiles: FileList) {
           >
             <n-button :bordered="false" size="small" quaternary>
               File
-            </n-button>
-          </n-dropdown>
-          <n-dropdown
-            trigger="click"
-            :options="exportOptions"
-            @select="handleDropdownOption"
-          >
-            <n-button :bordered="false" size="small" quaternary>
-              Export
             </n-button>
           </n-dropdown>
           <n-dropdown

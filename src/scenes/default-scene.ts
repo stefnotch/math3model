@@ -5,8 +5,7 @@ import { ReadonlyEulerAngles } from "./scene-state";
 import type { ImportFilesList } from "@/stores/fs-store";
 
 import sceneJson from "./example-scene/heart-sphere-morph/scene.json?raw";
-import heartSphereGraph from "./example-scene/heart-sphere-morph/heart-sphere.graph?raw";
-import heartSphereGraphWgsl from "./example-scene/heart-sphere-morph/heart-sphere.graph.wgsl?raw";
+import heartSphereWgsl from "./example-scene/heart-sphere-morph/heart-sphere.wgsl?raw";
 import heartTextureUrl from "./example-scene/heart-sphere-morph/heart-texture.png";
 
 const textEncoder = new TextEncoder();
@@ -20,12 +19,8 @@ export const DefaultScene: ImportFilesList = {
       value: textEncoder.encode(sceneJson),
     },
     {
-      name: "heart-sphere.graph",
-      value: textEncoder.encode(heartSphereGraph),
-    },
-    {
-      name: "heart-sphere.graph.wgsl",
-      value: textEncoder.encode(heartSphereGraphWgsl),
+      name: "heart-sphere.wgsl",
+      value: textEncoder.encode(heartSphereWgsl),
     },
     {
       name: "heart-texture.png",

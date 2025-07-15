@@ -6,7 +6,7 @@ import { useDebounceFn, watchImmediate } from "@vueuse/core";
 import { showError, showFileError } from "@/notification";
 import type { WasmCompilationMessage } from "parametric-renderer-core/pkg/web";
 
-export type EditorType = "shader" | "graph";
+export type EditorType = "shader";
 
 /** The logic for the open code file */
 export function useOpenFile(
@@ -22,8 +22,6 @@ export function useOpenFile(
       return "shader";
     } else if (fileName.endsWith(".wgsl")) {
       return "shader";
-    } else if (fileName.endsWith(".graph")) {
-      return "graph";
     } else {
       return "shader";
     }
@@ -89,7 +87,7 @@ export function useOpenFile(
     if (keyedCode.value === null) {
       return true;
     }
-    return keyedCode.value.name.endsWith(".graph.wgsl");
+    return false;
   });
 
   function openFile(v: FilePath) {

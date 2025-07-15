@@ -1,4 +1,3 @@
-import { getBuffers, renderEncoder, type LodStageBuffers } from "@/webgpu-hook";
 import init, {
   WasmApplication,
   type WasmModelInfo,
@@ -9,7 +8,7 @@ import init, {
 
 await init();
 
-/** Wraps the Rust engine in fire-and-forget functions. They will always be execude in-order */
+/** Wraps the Rust engine in fire-and-forget functions. They will always be executed in-order */
 export class WgpuEngine {
   private taskQueue: Promise<void> = Promise.resolve();
   private constructor(private engine: WasmApplication) {}
@@ -50,30 +49,6 @@ export class WgpuEngine {
     this.taskQueue = this.taskQueue.then(() =>
       this.engine.set_on_shader_compiled(callback)
     );
-    await this.taskQueue;
-  }
-  async setLodStage(
-    callback:
-      | null
-      | ((
-          shaderPath: string,
-          buffers: LodStageBuffers,
-          commandEncoder: GPUCommandEncoder
-        ) => void)
-  ) {
-    if (callback === null) {
-      this.taskQueue = this.taskQueue.then(() => this.engine.set_lod_stage());
-    } else {
-      this.taskQueue = this.taskQueue.then(() =>
-        this.engine.set_lod_stage((shaderPath: string, buffersUUID: string) => {
-          if (renderEncoder === null) {
-            console.error("renderEncoder is null");
-          } else {
-            callback(shaderPath, getBuffers(buffersUUID), renderEncoder);
-          }
-        })
-      );
-    }
     await this.taskQueue;
   }
   async getFrameTime(): Promise<WasmFrameTime> {

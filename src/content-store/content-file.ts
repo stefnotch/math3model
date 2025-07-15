@@ -4,10 +4,6 @@ export type ContentType =
     }
   | {
       kind: "shader";
-      subKind?: "graph-generated";
-    }
-  | {
-      kind: "graph";
     }
   | {
       kind: "json";
@@ -53,19 +49,8 @@ export function fileNameToType(name: string): ContentType {
       kind: "unknown",
     };
   } else if (extension === "wgsl") {
-    if (name.endsWith(".graph.wgsl")) {
-      return {
-        kind: "shader",
-        subKind: "graph-generated",
-      };
-    } else {
-      return {
-        kind: "shader",
-      };
-    }
-  } else if (extension === "graph") {
     return {
-      kind: "graph",
+      kind: "shader",
     };
   } else if (imageFileTypes.has(extension)) {
     return {
