@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { darkTheme, lightTheme } from "naive-ui";
-import { RouterView } from "vue-router";
 import { useStore } from "./stores/store";
 import { computed } from "vue";
 import { useFsStore } from "./stores/fs-store";
+import HomeView from "./views/HomeView.vue";
 
 const store = useStore();
 const fsStore = useFsStore();
@@ -29,7 +29,7 @@ const theme = computed(() => (store.isDark ? darkTheme : lightTheme));
         <div v-else></div>
       </n-modal>
 
-      <RouterView> </RouterView>
+      <HomeView> </HomeView>
     </n-config-provider>
   </div>
 </template>

@@ -6,7 +6,6 @@ import { showError } from "@/notification";
 import "@/monaco-setup";
 
 import App from "./App.vue";
-import router from "./views/router";
 
 if (globalThis.navigator.gpu === undefined) {
   showError(
@@ -39,6 +38,4 @@ globalThis.addEventListener("error", (event) => {
 const app = createApp(App);
 
 app.use(createPinia());
-app.use(router);
-
 app.mount("#app");
