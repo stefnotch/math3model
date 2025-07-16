@@ -36,7 +36,7 @@ use crate::{
     input::WindowCursorCapture,
     mesh::Mesh,
     reactive::{ForEach, MemoComputed, SignalVec},
-    shaders::{compute_patches, copy_patches, utils},
+    shaders::{compute_patches, copy_patches, render_patches, utils},
     texture::Texture,
     time::{FrameCounter, Seconds},
     window_or_fallback::WindowOrFallback,
@@ -392,7 +392,7 @@ fn render_component(
         let current_hot_value = hot_value.get();
         scene_data.read_value().extra_buffer.write_buffer(
             &context.queue,
-            &shader::Extra {
+            &crate::shaders::uniforms_0::Extra {
                 hot_value: current_hot_value,
             },
         );
@@ -834,14 +834,14 @@ fn lod_stage_component(
 }
 
 struct RenderInfo {
-    render_bind_group_0: StoredValue<shader::bind_groups::BindGroup0>,
+    render_bind_group_0: StoredValue<render_patches::bind_groups::BindGroup0>,
     meshes: StoredValue<Vec<Mesh>>,
 }
 
 /// Renders a single model
 /// A model can change even when its ID stays the same. But the number of allocated buffers stays the same.
 fn render_model_component(
-    render_bind_group_0: StoredValue<shader::bind_groups::BindGroup0>,
+    render_bind_group_0: StoredValue<render_patches::bind_groups::BindGroup0>,
     shaders: RwSignal<HashMap<ShaderId, Arc<ShaderPipelines>>>,
     textures: RwSignal<HashMap<TextureId, Arc<Texture>>>,
     model: ArcReadSignal<ModelInfo>,
@@ -875,7 +875,7 @@ fn render_model_component(
 
     let model_buffer = StoredValue::new(device.uniform_buffer(
         "Model Buffer",
-        &shader::Model {
+        &render_patches::Model {
             model_similarity: glam::Mat4::IDENTITY,
             object_id: 0,
         },
@@ -897,9 +897,9 @@ fn render_model_component(
                 .render_buffer
                 .iter()
                 .map(|render| {
-                    shader::bind_groups::BindGroup1::from_bindings(
+                    render_patches::bind_groups::BindGroup1::from_bindings(
                         &context.device,
-                        shader::bind_groups::BindGroupLayout1 {
+                        render_patches::bind_groups::BindGroupLayout1 {
                             model: model_buffer.read_value().as_entire_buffer_binding(),
                             render_buffer: render.as_entire_buffer_binding(),
                             material: material_buffer.read_value().as_entire_buffer_binding(),
@@ -915,7 +915,7 @@ fn render_model_component(
         let queue = &get_context().queue;
         model_buffer.read_value().write_buffer(
             queue,
-            &shader::Model {
+            &render_patches::Model {
                 model_similarity: model.transform.to_matrix(),
                 object_id: 0, // TODO: set this
             },
@@ -937,7 +937,7 @@ fn render_model_component(
                         .extra
                         .stride
                         .get();
-                shader::set_bind_groups(
+                render_patches::set_bind_groups(
                     &mut render_pass.recorder,
                     &render_bind_group_0.read_value(),
                     bind_group_1,

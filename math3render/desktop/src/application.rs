@@ -11,7 +11,8 @@ use winit::event_loop::EventLoop;
 use crate::config::{CacheFile, CachedCamera, CachedChosenController};
 
 const CACHE_FILE: &'static str = "cache.json";
-const HEART_SPHERE_SHADER_CODE: &'static str = include_str!("../../shaders/HeartSphere.wgsl");
+const HEART_SPHERE_SHADER_CODE: &'static str =
+    include_str!("../../render/shaders/HeartSphere.wgsl");
 
 fn save_cache(mut cache_file: CacheFile) -> impl FnOnce(&mut Application) {
     move |app: &mut Application| {

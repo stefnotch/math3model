@@ -15,7 +15,7 @@ glam = { workspace = true }
 log = { workspace = true }
 nanoserde = "0.2.1"
 render = { features = ["desktop"], path = "../render" }
-wgpu = { workspace = true, features = ["wgsl"] }
+wgpu = { workspace = true, features = ["vulkan", "wgsl"] }
 wgpu-profiler = "0.24.0"
 winit = { workspace = true }
 

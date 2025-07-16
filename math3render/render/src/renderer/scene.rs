@@ -1,15 +1,20 @@
-use crate::{buffer::TypedBuffer, camera::Camera, shaders::shader, time::FrameTime};
+use crate::{
+    buffer::TypedBuffer,
+    camera::Camera,
+    shaders::{pbr, render_patches, uniforms_0},
+    time::FrameTime,
+};
 use glam::{Mat4, UVec2, Vec2, Vec4};
 
 use super::FrameData;
 
 pub struct SceneData {
-    pub time_buffer: TypedBuffer<shader::Time>,
-    pub screen_buffer: TypedBuffer<shader::Screen>,
-    pub mouse_buffer: TypedBuffer<shader::Mouse>,
-    pub extra_buffer: TypedBuffer<shader::Extra>,
-    pub camera_buffer: TypedBuffer<shader::Camera>,
-    pub light_buffer: TypedBuffer<shader::Lights>,
+    pub time_buffer: TypedBuffer<uniforms_0::Time>,
+    pub screen_buffer: TypedBuffer<uniforms_0::Screen>,
+    pub mouse_buffer: TypedBuffer<uniforms_0::Mouse>,
+    pub extra_buffer: TypedBuffer<uniforms_0::Extra>,
+    pub camera_buffer: TypedBuffer<render_patches::Camera>,
+    pub light_buffer: TypedBuffer<render_patches::Lights>,
     pub linear_sampler: wgpu::Sampler,
 }
 
@@ -19,7 +24,7 @@ impl SceneData {
             time_buffer: TypedBuffer::new_uniform(
                 device,
                 "Time Buffer",
-                &shader::Time {
+                &uniforms_0::Time {
                     elapsed: 0.0,
                     delta: 1000.0 / 60.0,
                     frame: 0,
@@ -29,7 +34,7 @@ impl SceneData {
             screen_buffer: TypedBuffer::new_uniform(
                 device,
                 "Screen Buffer",
-                &shader::Screen {
+                &uniforms_0::Screen {
                     resolution: UVec2::ONE,
                     inv_resolution: Vec2::ONE,
                 },
@@ -38,7 +43,7 @@ impl SceneData {
             mouse_buffer: TypedBuffer::new_uniform(
                 device,
                 "Mouse Buffer",
-                &shader::Mouse {
+                &uniforms_0::Mouse {
                     pos: Vec2::ZERO,
                     buttons: 0,
                 },
@@ -47,13 +52,13 @@ impl SceneData {
             extra_buffer: TypedBuffer::new_uniform(
                 device,
                 "Mouse Buffer",
-                &shader::Extra { hot_value: 0. },
+                &uniforms_0::Extra { hot_value: 0. },
                 wgpu::BufferUsages::COPY_DST,
             ),
             camera_buffer: TypedBuffer::new_uniform(
                 device,
                 "Camera Buffer",
-                &shader::Camera {
+                &render_patches::Camera {
                     view: Mat4::IDENTITY,
                     projection: Mat4::IDENTITY,
                     world_position: Vec4::ZERO,
@@ -63,29 +68,29 @@ impl SceneData {
             light_buffer: TypedBuffer::new_storage(
                 device,
                 "Light Buffer",
-                &shader::Lights {
+                &render_patches::Lights {
                     ambient: Vec4::new(0.05, 0.05, 0.05, 0.0),
                     points_length: 4,
                     points: vec![
-                        shader::LightSource {
+                        pbr::LightSource {
                             position_range: glam::Vec3::new(1.0, -4.0, 1.0).normalize().extend(1.0),
                             color_intensity: Vec4::new(0.5, 0.55, 0.5, 0.9),
-                            light_type: shader::LIGHT_TYPE_DIRECTIONAL,
+                            light_type: pbr::LIGHT_TYPE_DIRECTIONAL,
                         },
-                        shader::LightSource {
+                        pbr::LightSource {
                             position_range: Vec4::new(0.0, 8.0, 4.0, 80.0),
                             color_intensity: Vec4::new(1.0, 1.0, 1.0, 1.0),
-                            light_type: shader::LIGHT_TYPE_POINT,
+                            light_type: pbr::LIGHT_TYPE_POINT,
                         },
-                        shader::LightSource {
+                        pbr::LightSource {
                             position_range: Vec4::new(1.0, 8.0, -6.0, 70.0),
                             color_intensity: Vec4::new(1.0, 1.0, 1.0, 1.5),
-                            light_type: shader::LIGHT_TYPE_POINT,
+                            light_type: pbr::LIGHT_TYPE_POINT,
                         },
-                        shader::LightSource {
+                        pbr::LightSource {
                             position_range: Vec4::new(0.0, -8.0, 0.0, 80.0),
                             color_intensity: Vec4::new(0.8, 0.8, 1.0, 0.9),
-                            light_type: shader::LIGHT_TYPE_POINT,
+                            light_type: pbr::LIGHT_TYPE_POINT,
                         },
                     ],
                 },
@@ -103,10 +108,13 @@ impl SceneData {
         }
     }
 
-    pub fn as_bind_group_0(&self, device: &wgpu::Device) -> shader::bind_groups::BindGroup0 {
-        shader::bind_groups::BindGroup0::from_bindings(
+    pub fn as_bind_group_0(
+        &self,
+        device: &wgpu::Device,
+    ) -> render_patches::bind_groups::BindGroup0 {
+        render_patches::bind_groups::BindGroup0::from_bindings(
             device,
-            shader::bind_groups::BindGroupLayout0 {
+            render_patches::bind_groups::BindGroupLayout0 {
                 camera: self.camera_buffer.as_entire_buffer_binding(),
                 time: self.time_buffer.as_entire_buffer_binding(),
                 screen: self.screen_buffer.as_entire_buffer_binding(),
@@ -127,7 +135,7 @@ impl SceneData {
     ) {
         self.time_buffer.write_buffer(
             queue,
-            &shader::Time {
+            &uniforms_0::Time {
                 elapsed: frame_time.elapsed.0,
                 delta: frame_time.delta.0,
                 frame: frame_time.frame as u32,
@@ -135,14 +143,14 @@ impl SceneData {
         );
         self.screen_buffer.write_buffer(
             queue,
-            &shader::Screen {
+            &uniforms_0::Screen {
                 resolution: size,
                 inv_resolution: Vec2::new(1.0 / (size.x as f32), 1.0 / (size.y as f32)),
             },
         );
         self.mouse_buffer.write_buffer(
             queue,
-            &shader::Mouse {
+            &uniforms_0::Mouse {
                 pos: render_data.mouse_pos,
                 buttons: if render_data.mouse_held { 1 } else { 0 },
             },
@@ -153,8 +161,8 @@ impl SceneData {
 }
 
 impl Camera {
-    fn to_shader(&self, size: UVec2) -> shader::Camera {
-        shader::Camera {
+    fn to_shader(&self, size: UVec2) -> render_patches::Camera {
+        render_patches::Camera {
             view: self.view_matrix(),
             projection: self.projection_matrix(size),
             world_position: self.position.extend(1.0),

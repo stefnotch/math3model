@@ -13,6 +13,7 @@ import package::utils::{
 // It was just a mangling error?
 import package::uniforms_0::{Time, Screen, Mouse, Extra};
 
+//// START sampleObject
 fn sampleObject(input: vec2f) -> vec3f {
     let a = time;
     let b = screen;
@@ -20,6 +21,7 @@ fn sampleObject(input: vec2f) -> vec3f {
     let d = extra;
     return vec3(input, 0.0);
 }
+//// END sampleObject
 
 var<private> instance_id: u32;
 

@@ -49,6 +49,8 @@ fn main() {
     shader_compiler.compile("compute_patches");
     shader_compiler.compile("copy_patches");
     shader_compiler.compile("ground_plane");
+    shader_compiler.compile("skybox");
+    shader_compiler.compile("render_patches");
 
     std::fs::write(
         &shader_compiler.out_dir.join("shaders.rs"),

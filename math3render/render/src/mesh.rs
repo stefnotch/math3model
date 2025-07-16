@@ -1,7 +1,7 @@
 use glam::{Vec2, Vec3};
 use wgpu::util::DeviceExt;
 
-use crate::shaders::shader;
+use crate::shaders::render_patches;
 
 pub struct Mesh {
     pub vertex_buffer: wgpu::Buffer,
@@ -11,7 +11,7 @@ pub struct Mesh {
 impl Mesh {
     fn with_contents(
         device: &wgpu::Device,
-        vertex_buffer_contents: &[shader::VertexInput],
+        vertex_buffer_contents: &[render_patches::VertexInput],
         index_buffer_contents: &[u16],
     ) -> Self {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -47,7 +47,7 @@ impl Mesh {
     }
 }
 
-fn tesselated_quad(split_count: u32) -> (Vec<shader::VertexInput>, Vec<u16>) {
+fn tesselated_quad(split_count: u32) -> (Vec<render_patches::VertexInput>, Vec<u16>) {
     let mut vertices = Vec::new();
     let mut indices = Vec::new();
 
@@ -57,7 +57,7 @@ fn tesselated_quad(split_count: u32) -> (Vec<shader::VertexInput>, Vec<u16>) {
         for j in 0..=quad_count_one_side {
             let position = Vec3::new(i as f32, j as f32, 0.0) / (quad_count_one_side as f32);
             let uv = Vec2::new(i as f32, j as f32) / (quad_count_one_side as f32);
-            vertices.push(shader::VertexInput { position, uv });
+            vertices.push(render_patches::VertexInput { position, uv });
         }
     }
 
@@ -81,7 +81,7 @@ fn tesselated_quad(split_count: u32) -> (Vec<shader::VertexInput>, Vec<u16>) {
     (vertices, indices)
 }
 
-fn cubemap_cube(min: Vec3, max: Vec3) -> (Vec<shader::VertexInput>, Vec<u16>) {
+fn cubemap_cube(min: Vec3, max: Vec3) -> (Vec<render_patches::VertexInput>, Vec<u16>) {
     let vertices = [
         (-1, 1, -1),
         (-1, -1, -1),
@@ -126,7 +126,7 @@ fn cubemap_cube(min: Vec3, max: Vec3) -> (Vec<shader::VertexInput>, Vec<u16>) {
         (1, -1, 1),
     ]
     .into_iter()
-    .map(|(x, y, z)| shader::VertexInput {
+    .map(|(x, y, z)| render_patches::VertexInput {
         position: Vec3::new(
             if x < 0 { min.x } else { max.x },
             if y < 0 { min.y } else { max.y },

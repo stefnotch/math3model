@@ -4,7 +4,7 @@ use crate::{
     buffer::TypedBuffer,
     game::{MaterialInfo, TextureData, TextureInfo},
     mesh::Mesh,
-    shaders::{compute_patches, copy_patches, shader},
+    shaders::{compute_patches, copy_patches, render_patches, utils},
     texture::Texture,
 };
 
@@ -77,13 +77,13 @@ pub fn make_empty_texture(context: &WgpuContext) -> Arc<Texture> {
 
 // Minimal amount of info to pass from patches stage to render stage
 pub struct VirtualModel {
-    pub render_buffer: Vec<TypedBuffer<compute_patches::RenderBuffer>>,
+    pub render_buffer: Vec<TypedBuffer<utils::RenderBuffer>>,
     pub indirect_draw: TypedBuffer<Vec<copy_patches::DrawIndexedIndirectArgs>>,
 }
 
 impl VirtualModel {
     pub fn new(context: &WgpuContext, meshes: &[Mesh], id: &str) -> Self {
-        let render_buffer_initial = compute_patches::RenderBuffer {
+        let render_buffer_initial = utils::RenderBuffer {
             patches_length: 0,
             patches_capacity: 0,
             patches: vec![],
@@ -130,8 +130,8 @@ impl VirtualModel {
 }
 
 impl MaterialInfo {
-    pub fn to_shader(&self) -> shader::Material {
-        shader::Material {
+    pub fn to_shader(&self) -> render_patches::Material {
+        render_patches::Material {
             color_roughness: Vec4::new(self.color.x, self.color.y, self.color.z, self.roughness),
             emissive_metallic: self.emissive.extend(self.metallic),
             has_texture: if self.diffuse_texture.is_some() { 1 } else { 0 },
@@ -171,19 +171,19 @@ fn create_render_pipeline(
     let device = &context.device;
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: Some(&format!("Render Shader {}", label)),
-        source: wgpu::ShaderSource::Wgsl(replace_render_code(shader::SOURCE, code).into()),
+        source: wgpu::ShaderSource::Wgsl(replace_render_code(render_patches::SOURCE, code).into()),
     });
     (
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some(&format!("Render Pipeline {}", label)),
-            layout: Some(&shader::create_pipeline_layout(device)),
-            vertex: shader::vertex_state(
+            layout: Some(&render_patches::create_pipeline_layout(device)),
+            vertex: render_patches::vertex_state(
                 &shader,
-                &shader::vs_main_entry(wgpu::VertexStepMode::Vertex),
+                &render_patches::vs_main_entry(wgpu::VertexStepMode::Vertex),
             ),
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
-                entry_point: Some(shader::ENTRY_FS_MAIN),
+                entry_point: Some(render_patches::ENTRY_FS_MAIN),
                 targets: &[
                     Some(wgpu::ColorTargetState {
                         format: context.view_format,
@@ -240,7 +240,7 @@ pub fn create_compute_patches_pipeline(
             label: Some(&format!("Compute Patches {}", label)),
             layout: Some(&compute_patches::create_pipeline_layout(device)),
             module: &shader,
-            entry_point: Some(compute_patches::ENTRY_MAIN),
+            entry_point: Some(compute_patches::ENTRY_COMPUTE_PATCHES_MAIN),
             compilation_options: Default::default(),
             cache: Default::default(),
         }),
