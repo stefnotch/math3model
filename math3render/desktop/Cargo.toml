@@ -4,10 +4,6 @@ version = "0.2.0"
 edition = "2024"
 default-run = "desktop"
 
-[[bench]]
-harness = false
-name = "gpu_bench"
-
 [dependencies]
 any_spawner = { version = "0.2.0", default-features = false }
 anyhow = "1.0"
@@ -22,11 +18,6 @@ render = { features = ["desktop"], path = "../render" }
 wgpu = { workspace = true, features = ["wgsl"] }
 wgpu-profiler = "0.22.0"
 winit = { workspace = true }
-
-[dev-dependencies]
-any_spawner = { version = "0.2.0", features = ["futures-executor"] }
-criterion2 = "3.0.0"
-pollster = "0.4.0"
 
 [features]
 default = []
