@@ -1,2 +1,2 @@
-#[build]
+[build]
 rustflags = ["-Z", "threads=8"]
