@@ -4,11 +4,11 @@ import "monaco-editor/esm/vs/language/json/monaco.contribution.js";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker.js?worker";
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker.js?worker";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import {
   SceneFileSchema,
   SceneFileSchemaUrl,
 } from "./filesystem/scene-file.ts";
+import { toJSONSchema } from "zod";
 
 if (self.MonacoEnvironment) {
   console.error(
@@ -27,12 +27,20 @@ self.MonacoEnvironment = {
   },
 };
 
+console.log(
+  toJSONSchema(SceneFileSchema, {
+    target: "draft-7",
+  })
+);
+
 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
   validate: true,
   schemas: [
     {
       uri: SceneFileSchemaUrl,
-      schema: zodToJsonSchema(SceneFileSchema, "sceneSchema"),
+      schema: toJSONSchema(SceneFileSchema, {
+        target: "draft-7",
+      }),
     },
   ],
 });

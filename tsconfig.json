@@ -13,7 +13,7 @@
       "DOM.AsyncIterable",
       "ESNext.AsyncIterable"
     ],
-    "types": ["@types/dom-webcodecs"],
+    "types": ["@types/dom-webcodecs", "@types/node", "@webgpu/types"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
