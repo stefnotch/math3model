@@ -36,15 +36,15 @@ use crate::{
     input::WindowCursorCapture,
     mesh::Mesh,
     reactive::{ForEach, MemoComputed, SignalVec},
-    shaders::{compute_patches, copy_patches, shader},
+    shaders::{compute_patches, copy_patches, utils},
     texture::Texture,
     time::{FrameCounter, Seconds},
     window_or_fallback::WindowOrFallback,
 };
 struct ComputePatchesStep {
     bind_group_0: compute_patches::bind_groups::BindGroup0,
-    patches_buffer_reset: TypedBuffer<compute_patches::Patches>,
-    indirect_compute_buffer_reset: TypedBuffer<compute_patches::DispatchIndirectArgs>,
+    patches_buffer_reset: TypedBuffer<utils::Patches>,
+    indirect_compute_buffer_reset: TypedBuffer<utils::DispatchIndirectArgs>,
     force_render_false: TypedBuffer<compute_patches::ForceRenderFlag>,
     force_render_true: TypedBuffer<compute_patches::ForceRenderFlag>,
 }
@@ -330,7 +330,7 @@ fn render_component(
         patches_buffer_reset: TypedBuffer::new_storage_with_runtime_array(
             &context.device,
             "Patches Buffer Reset",
-            &compute_patches::Patches {
+            &utils::Patches {
                 patches_length: 0,
                 patches_capacity: MAX_PATCH_COUNT,
                 patches: vec![],
@@ -342,7 +342,7 @@ fn render_component(
             &context.device,
             "Indirect Compute Dispatch Buffer Reset",
             // We only write to x. y and z have their default value.
-            &compute_patches::DispatchIndirectArgs { x: 0, y: 1, z: 1 },
+            &utils::DispatchIndirectArgs { x: 0, y: 1, z: 1 },
             wgpu::BufferUsages::COPY_SRC,
         ),
         force_render_false: TypedBuffer::new_uniform(
@@ -472,11 +472,13 @@ fn render_component(
                             view: surface_texture.texture_view(),
                             resolve_target: None,
                             ops: Default::default(),
+                            depth_slice: Default::default(),
                         }),
                         Some(wgpu::RenderPassColorAttachment {
                             view: &object_id_texture.read().view,
                             resolve_target: None,
                             ops: Default::default(),
+                            depth_slice: Default::default(),
                         }),
                     ],
                     depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
@@ -622,7 +624,7 @@ fn lod_stage_component(
         wgpu::BufferUsages::COPY_DST,
     ));
 
-    let patches_buffer_empty = compute_patches::Patches {
+    let patches_buffer_empty = utils::Patches {
         patches_length: 0,
         patches_capacity: 0,
         patches: vec![],
@@ -646,12 +648,12 @@ fn lod_stage_component(
         device.storage_buffer(
             &format!("{id} Indirect Compute Dispatch Buffer 0"),
             // None of these values will ever be read
-            &compute_patches::DispatchIndirectArgs { x: 0, y: 0, z: 0 },
+            &utils::DispatchIndirectArgs { x: 0, y: 0, z: 0 },
             BufferUsages::INDIRECT | BufferUsages::COPY_DST,
         ),
         device.storage_buffer(
             &format!("{id} Indirect Compute Dispatch Buffer 1"),
-            &compute_patches::DispatchIndirectArgs { x: 0, y: 0, z: 0 },
+            &utils::DispatchIndirectArgs { x: 0, y: 0, z: 0 },
             BufferUsages::INDIRECT | BufferUsages::COPY_DST,
         ),
     ];
@@ -724,12 +726,12 @@ fn lod_stage_component(
         let instance_count = model.with(|v| v.instance_count);
         patches_buffer[0].write_buffer(
             queue,
-            &compute_patches::Patches {
+            &utils::Patches {
                 patches_length: instance_count,
                 patches_capacity: MAX_PATCH_COUNT,
                 patches: (0..instance_count)
                     .map(|i| {
-                        compute_patches::EncodedPatch {
+                        utils::EncodedPatch {
                             // Just the leading 1 bit
                             u: 1,
                             v: 1,
@@ -741,14 +743,14 @@ fn lod_stage_component(
         );
         indirect_compute_buffer[0].write_buffer(
             queue,
-            &compute_patches::DispatchIndirectArgs {
+            &utils::DispatchIndirectArgs {
                 x: instance_count,
                 y: 1,
                 z: 1,
             },
         );
 
-        let render_buffer_reset = compute_patches::RenderBuffer {
+        let render_buffer_reset = utils::RenderBuffer {
             patches_length: 0,
             patches_capacity: MAX_PATCH_COUNT,
             patches: vec![],

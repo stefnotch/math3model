@@ -1,17 +1,17 @@
 [workspace]
 resolver = "3"
-members = ["copy-includes", "desktop", "render", "wasm"]
+members = ["desktop", "render", "wasm"]
 
 [workspace.dependencies]
-bytemuck = { version = "1.21.0", features = ["derive"] }
-encase = { version = "0.10.0", features = ["glam"] }
-glam = { version = "0.29.2", features = ["bytemuck"] }
-indexmap = "2.7.1"
-log = "0.4.26"
-reactive_graph = { version = "0.1.7", features = ["effects"] }
-uuid = { version = "1.15.1", features = ["v4"] }
-wgpu = { version = "24.0.1", default-features = false }
-winit = { version = "0.30.9" }
+bytemuck = { version = "1.23.1", features = ["derive"] }
+encase = { version = "0.11.1", features = ["glam"] }
+glam = { version = "0.30.4", features = ["bytemuck"] }
+indexmap = "2.10.0"
+log = "0.4.27"
+reactive_graph = { version = "0.2.3", features = ["effects"] }
+uuid = { version = "1.17.0", features = ["v4"] }
+wgpu = { version = "26.0.1", default-features = false }
+winit = { version = "0.30.11" }
 
 [profile.release]
 debug = true

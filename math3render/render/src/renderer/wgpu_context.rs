@@ -34,22 +34,17 @@ impl WgpuContext {
                 compatible_surface: None,
                 force_fallback_adapter: false,
             })
-            .await
-            .ok_or_else(|| anyhow::anyhow!("No adapter found"))?;
+            .await?;
         info!("Adapter: {:?}", adapter.get_info());
 
         let (device, queue) = adapter
-            .request_device(
-                &wgpu::DeviceDescriptor {
-                    required_features: wgpu::Features::default()
-                        | (adapter.features() & GpuProfiler::ALL_WGPU_TIMER_FEATURES)
-                        | (adapter.features() & wgpu::Features::POLYGON_MODE_LINE),
-                    required_limits: wgpu::Limits::default(),
-                    label: None,
-                    memory_hints: Default::default(),
-                },
-                None,
-            )
+            .request_device(&wgpu::DeviceDescriptor {
+                required_features: wgpu::Features::default()
+                    | (adapter.features() & GpuProfiler::ALL_WGPU_TIMER_FEATURES)
+                    | (adapter.features() & wgpu::Features::POLYGON_MODE_LINE),
+                required_limits: wgpu::Limits::default(),
+                ..Default::default()
+            })
             .await
             .unwrap();
 
