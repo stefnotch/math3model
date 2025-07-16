@@ -19,7 +19,7 @@ pub fn ground_plane_component(
     #[cfg(feature = "desktop")]
     let _file_watcher = {
         use reactive_graph::traits::Set;
-        let source_path = "./shaders/GroundPlane.wgsl";
+        let source_path = "./render/shaders/GroundPlane.wgsl";
         let mut file_watcher = notify_debouncer_full::new_debouncer(
             std::time::Duration::from_millis(1000),
             None,
@@ -37,7 +37,7 @@ pub fn ground_plane_component(
         .unwrap();
         file_watcher
             .watch(
-                "./shaders",
+                "./render/shaders",
                 notify_debouncer_full::notify::RecursiveMode::Recursive,
             )
             .unwrap();
