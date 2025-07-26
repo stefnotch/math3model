@@ -1,18 +1,12 @@
 // This is the simplest design, where each virtual model has its own set of resources.
 
 use crate::{
-    buffer::TypedBuffer,
-    game::{MaterialInfo, TextureData, TextureInfo},
-    mesh::Mesh,
-    shaders::{compute_patches, copy_patches, render_patches, utils},
+    scene::MaterialInfo,
+    shaders::{compute_patches, render_patches},
     texture::Texture,
+    wgpu_context::{VIEW_FORMAT, WgpuContext},
 };
-
-use super::{MAX_PATCH_COUNT, PATCH_SIZES, wgpu_context::WgpuContext};
-use std::sync::Arc;
-
-use glam::{Vec2, Vec3, Vec4};
-use uuid::Uuid;
+use glam::Vec4;
 use wgpu::ShaderModule;
 
 pub struct ShaderPipelines {
@@ -21,16 +15,7 @@ pub struct ShaderPipelines {
     /// Pipeline per model, for different parametric functions.
     pub render: wgpu::RenderPipeline,
     pub shaders: [ShaderModule; 2],
-    pub id: Uuid,
 }
-
-impl PartialEq for ShaderPipelines {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
-}
-
-impl Eq for ShaderPipelines {}
 
 impl ShaderPipelines {
     pub fn new(label: &str, code: &str, context: &WgpuContext) -> Self {
@@ -42,7 +27,6 @@ impl ShaderPipelines {
             compute_patches,
             render,
             shaders: [shader_a, shader_b],
-            id: Uuid::new_v4(),
         }
     }
 
@@ -53,82 +37,6 @@ impl ShaderPipelines {
     }
 }
 
-const MISSING_SHADER: &str = include_str!("../../shaders/DefaultParametric.wgsl");
-
-pub fn make_missing_shader(context: &WgpuContext) -> Arc<ShaderPipelines> {
-    Arc::new(ShaderPipelines::new(
-        "Missing Shader",
-        MISSING_SHADER,
-        context,
-    ))
-}
-
-pub fn make_empty_texture(context: &WgpuContext) -> Arc<Texture> {
-    Arc::new(Texture::new_rgba(
-        &context.device,
-        &context.queue,
-        &TextureInfo {
-            width: 1,
-            height: 1,
-            data: TextureData::Bytes(vec![u8::MAX, u8::MAX, u8::MAX, u8::MAX]),
-        },
-    ))
-}
-
-// Minimal amount of info to pass from patches stage to render stage
-pub struct VirtualModel {
-    pub render_buffer: Vec<TypedBuffer<utils::RenderBuffer>>,
-    pub indirect_draw: TypedBuffer<Vec<copy_patches::DrawIndexedIndirectArgs>>,
-}
-
-impl VirtualModel {
-    pub fn new(context: &WgpuContext, meshes: &[Mesh], id: &str) -> Self {
-        let render_buffer_initial = utils::RenderBuffer {
-            patches_length: 0,
-            patches_capacity: 0,
-            patches: vec![],
-        };
-        let render_buffer = PATCH_SIZES
-            .iter()
-            .map(|size| {
-                TypedBuffer::new_storage_with_runtime_array(
-                    &context.device,
-                    &format!("{id} Render Buffer {size}"),
-                    &render_buffer_initial,
-                    MAX_PATCH_COUNT as u64,
-                    wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
-                )
-            })
-            .collect::<Vec<_>>();
-
-        let indirect_draw_data = copy_patches::DrawIndexedIndirectArgs {
-            index_count: 0,
-            instance_count: 0, // Our shader sets this
-            first_index: 0,
-            base_vertex: 0,
-            first_instance: 0,
-        };
-
-        let indirect_draw = TypedBuffer::new_storage(
-            &context.device,
-            &format!("{} Indirect Draw Buffers", id),
-            &meshes
-                .iter()
-                .map(|mesh| copy_patches::DrawIndexedIndirectArgs {
-                    index_count: mesh.num_indices,
-                    ..indirect_draw_data
-                })
-                .collect::<Vec<_>>(),
-            wgpu::BufferUsages::INDIRECT | wgpu::BufferUsages::COPY_SRC,
-        );
-
-        Self {
-            render_buffer,
-            indirect_draw,
-        }
-    }
-}
-
 impl MaterialInfo {
     pub fn to_shader(&self) -> render_patches::Material {
         render_patches::Material {
@@ -136,29 +44,6 @@ impl MaterialInfo {
             emissive_metallic: self.emissive.extend(self.metallic),
             has_texture: if self.diffuse_texture.is_some() { 1 } else { 0 },
             texture_scale: self.texture_scale,
-        }
-    }
-
-    pub fn missing() -> Self {
-        Self {
-            color: Vec3::new(1.0, 0.0, 1.0),
-            emissive: Vec3::new(1.0, 0.0, 1.0),
-            roughness: 0.7,
-            metallic: 0.0,
-            diffuse_texture: None,
-            texture_scale: Vec2::ONE,
-        }
-    }
-}
-impl Default for MaterialInfo {
-    fn default() -> Self {
-        Self {
-            color: Vec3::new(0.0, 0.0, 0.0),
-            emissive: Vec3::new(0.0, 0.0, 0.0),
-            roughness: 0.0,
-            metallic: 0.0,
-            diffuse_texture: None,
-            texture_scale: Vec2::ONE,
         }
     }
 }
@@ -186,7 +71,7 @@ fn create_render_pipeline(
                 entry_point: Some(render_patches::ENTRY_FS_MAIN),
                 targets: &[
                     Some(wgpu::ColorTargetState {
-                        format: context.view_format,
+                        format: VIEW_FORMAT,
                         blend: Some(wgpu::BlendState::REPLACE),
                         write_mask: wgpu::ColorWrites::ALL,
                     }),

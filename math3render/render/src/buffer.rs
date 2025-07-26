@@ -1,16 +1,20 @@
 use std::marker::PhantomData;
 use wgpu::util::DeviceExt;
 
+/// Corresponds to a [`wgpu::BufferSlice`]
+#[derive(PartialEq)]
 pub struct TypedBuffer<T>
 where
     T: ?Sized,
 {
     buffer: wgpu::Buffer,
+    offset: wgpu::BufferAddress,
+    size: wgpu::BufferSize,
     variant: TypedBufferVariant,
     _phantom: PhantomData<T>,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 enum TypedBufferVariant {
     Uniform,
     Storage,
@@ -30,14 +34,17 @@ where
         T: encase::ShaderType + encase::internal::WriteInto,
     {
         let usage = usage | wgpu::BufferUsages::UNIFORM;
+        let contents = write_uniform_buffer(data);
         let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(label),
-            contents: &write_uniform_buffer(data),
+            contents: &contents,
             usage,
         });
 
         Self {
             buffer,
+            offset: 0,
+            size: wgpu::BufferSize::new(contents.len() as u64).unwrap(),
             variant: TypedBufferVariant::Uniform,
             _phantom: PhantomData,
         }
@@ -53,14 +60,17 @@ where
         T: encase::ShaderType + encase::internal::WriteInto,
     {
         let usage = usage | wgpu::BufferUsages::STORAGE;
+        let contents = write_storage_buffer(data);
         let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(label),
-            contents: &write_storage_buffer(data),
+            contents: &contents,
             usage,
         });
 
         Self {
             buffer,
+            offset: 0,
+            size: wgpu::BufferSize::new(contents.len() as u64).unwrap(),
             variant: TypedBufferVariant::Storage,
             _phantom: PhantomData,
         }
@@ -101,6 +111,8 @@ where
 
         Self {
             buffer,
+            offset: 0,
+            size: wgpu::BufferSize::new(size).unwrap(),
             variant: TypedBufferVariant::Storage,
             _phantom: PhantomData,
         }
@@ -118,7 +130,7 @@ where
         queue.write_buffer(&self.buffer, 0, contents.as_slice());
     }
 
-    pub fn as_entire_buffer_binding(&self) -> wgpu::BufferBinding<'_> {
+    pub fn as_buffer_binding(&self) -> wgpu::BufferBinding<'_> {
         self.buffer.as_entire_buffer_binding()
     }
 
@@ -190,6 +202,8 @@ where
     fn clone(&self) -> Self {
         Self {
             buffer: self.buffer.clone(),
+            offset: self.offset.clone(),
+            size: self.size.clone(),
             variant: self.variant,
             _phantom: self._phantom.clone(),
         }

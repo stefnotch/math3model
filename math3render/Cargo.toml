@@ -8,8 +8,10 @@ encase = { version = "0.11.1", features = ["glam"] }
 glam = { version = "0.30.4", features = ["bytemuck"] }
 indexmap = "2.10.0"
 log = "0.4.27"
-reactive_graph = { version = "0.2.3", features = ["effects"] }
-uuid = { version = "1.17.0", features = ["v4"] }
+nanoserde = { version = "0.2.1", default-features = false, features = [
+  "json",
+  "std",
+] }
 wgpu = { version = "26.0.1", default-features = false }
 winit = { version = "0.30.11" }
 

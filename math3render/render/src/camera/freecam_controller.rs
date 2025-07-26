@@ -40,7 +40,7 @@ impl FreecamController {
 
         self.update_position(input_to_direction(input), delta_time, settings);
         if input.mouse.pressed(MouseButton::Middle) {
-            self.update_pan_position(mouse_delta, delta_time, settings);
+            self.update_pan_position(mouse_delta, settings);
             cursor_capture = CursorCaptureRequest::LockedAndHidden;
         }
         cursor_capture
@@ -53,16 +53,11 @@ impl FreecamController {
         );
     }
 
-    fn update_pan_position(
-        &mut self,
-        direction: Vec2,
-        delta_time: f32,
-        settings: &GeneralControllerSettings,
-    ) {
+    fn update_pan_position(&mut self, direction: Vec2, settings: &GeneralControllerSettings) {
         let horizontal_movement = self.orientation() * (Camera::right() * direction.x * 1.0);
         let vertical_movement = self.orientation() * (Camera::up() * direction.y * -1.0);
-        self.position += horizontal_movement * settings.pan_speed * delta_time;
-        self.position += vertical_movement * settings.pan_speed * delta_time;
+        self.position += horizontal_movement * settings.pan_speed;
+        self.position += vertical_movement * settings.pan_speed;
     }
 
     fn set_pitch_yaw(&mut self, new_pitch: Angle, new_yaw: Angle) {

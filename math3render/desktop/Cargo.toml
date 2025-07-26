@@ -5,7 +5,6 @@ edition = "2024"
 default-run = "desktop"
 
 [dependencies]
-any_spawner = { version = "0.3.0", default-features = false }
 anyhow = "1.0"
 env_logger = { version = "0.11.8", default-features = false }
 futures = { version = "0.3.31", default-features = false, features = [
@@ -13,7 +12,7 @@ futures = { version = "0.3.31", default-features = false, features = [
 ] }
 glam = { workspace = true }
 log = { workspace = true }
-nanoserde = "0.2.1"
+nanoserde = { workspace = true }
 render = { features = ["desktop"], path = "../render" }
 wgpu = { workspace = true, features = ["vulkan", "wgsl"] }
 wgpu-profiler = "0.24.0"

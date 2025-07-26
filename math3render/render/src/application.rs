@@ -8,10 +8,12 @@ use winit::{
 };
 
 use crate::{
-    game::{GameRes, ShaderId},
+    game::GameRes,
     input::{InputHandler, WindowInputs},
-    renderer::{GpuApplication, GpuApplicationBuilder},
+    renderer::GpuApplication,
+    scene::ShaderId,
     time::{TimeCounters, TimeStats},
+    wgpu_context::{WgpuContext, WgpuSurface},
     window_or_fallback::WindowOrFallback,
 };
 pub struct WasmCanvas {
@@ -33,10 +35,11 @@ impl WasmCanvas {
 pub struct Application {
     pub app: GameRes,
     window: Option<Arc<Window>>,
-    pub renderer: Option<GpuApplication>,
+    pub renderer: GpuApplication,
+    pub surface: Option<WgpuSurface>,
     pub time_stats: Arc<Mutex<TimeStats>>,
     time_counters: TimeCounters,
-    app_commands: EventLoopProxy<AppCommand>,
+    _app_commands: EventLoopProxy<AppCommand>,
     on_exit_callback: Option<Box<dyn FnOnce(&mut Application)>>,
     pub on_shader_compiled: Option<ShaderCompiledCallback>,
     _canvas: WasmCanvas,
@@ -45,27 +48,28 @@ pub struct Application {
 pub struct ShaderCompiledCallback(pub Arc<dyn Fn(&ShaderId, Vec<wgpu::CompilationMessage>)>);
 
 impl Application {
-    pub fn new(
+    pub async fn new(
         app_commands: EventLoopProxy<AppCommand>,
         on_exit: impl FnOnce(&mut Application) + 'static,
         canvas: WasmCanvas,
-    ) -> Self {
-        Self {
+    ) -> anyhow::Result<Self> {
+        let context = WgpuContext::new().await?;
+        Ok(Self {
             window: None,
             app: GameRes::new(),
-            renderer: None,
+            renderer: GpuApplication::new(context),
+            surface: None,
             time_stats: Default::default(),
             time_counters: TimeCounters::default(),
-            app_commands,
+            _app_commands: app_commands,
             on_exit_callback: Some(Box::new(on_exit)),
             on_shader_compiled: None,
             _canvas: canvas,
-        }
+        })
     }
 
     fn on_exit(&mut self) {
         self.window.take();
-        self.renderer.take();
         if let Some(on_exit_callback) = self.on_exit_callback.take() {
             on_exit_callback(self);
         }
@@ -74,27 +78,11 @@ impl Application {
     fn create_surface(&mut self, window: Window) {
         let window = Arc::new(window);
         self.window = Some(window.clone());
-
-        let gpu_builder = GpuApplicationBuilder::new(WindowOrFallback::Window(window));
-
-        let app_commands = self.app_commands.clone();
-        let on_shader_compiled = self.on_shader_compiled.clone();
-        let task = async move {
-            let renderer = gpu_builder.await.unwrap().build();
-            let _ = run_on_main(app_commands, move |app| {
-                for (shader_id, shader_info) in &app.app.shaders {
-                    any_spawner::Executor::spawn_local(renderer.set_shader(
-                        shader_id.clone(),
-                        shader_info,
-                        on_shader_compiled.clone(),
-                    ));
-                }
-                renderer.update_models(&app.app.models);
-                app.renderer = Some(renderer)
-            })
-            .await;
-        };
-        any_spawner::Executor::spawn_local(task);
+        let mut surface =
+            WgpuSurface::new(&self.renderer.context, WindowOrFallback::Window(window)).unwrap();
+        let size = surface.size();
+        self.renderer.resize(&mut surface, size);
+        self.surface = Some(surface);
     }
 }
 
@@ -127,7 +115,6 @@ where
 
 impl ApplicationHandler<AppCommand> for Application {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        // A really good app might recreate the renderer here?
         if let Some(window) = &self.window {
             window.request_redraw();
             return;
@@ -157,11 +144,6 @@ impl ApplicationHandler<AppCommand> for Application {
         _event_loop: &winit::event_loop::ActiveEventLoop,
         _cause: winit::event::StartCause,
     ) {
-        // We need this for the window creation to work
-        #[cfg(target_arch = "wasm32")]
-        if let winit::event::StartCause::Poll = _cause {
-            any_spawner::Executor::poll_local();
-        }
     }
 
     fn window_event(
@@ -177,7 +159,6 @@ impl ApplicationHandler<AppCommand> for Application {
                 event_loop.exit();
             }
             WindowEvent::RedrawRequested => {
-                any_spawner::Executor::poll_local();
                 if let Some(window) = &self.window {
                     window.request_redraw();
                 }
@@ -230,9 +211,9 @@ impl InputHandler for Application {
         }
 
         if let Some(PhysicalSize { width, height }) = input.new_size {
-            self.renderer
-                .as_mut()
-                .map(|r| r.resize(UVec2::new(width, height)));
+            if let Some(surface) = &mut self.surface {
+                self.renderer.resize(surface, UVec2::new(width, height));
+            }
         }
 
         let time_stats = self.time_counters.stats();
@@ -252,7 +233,11 @@ impl InputHandler for Application {
         *self.time_stats.lock().unwrap() = time_stats;
 
         self.app.update(&input);
-        match self.renderer.as_mut().map(|r| r.render(&self.app)) {
+        match self
+            .surface
+            .as_mut()
+            .map(|s| self.renderer.render(s, &self.app))
+        {
             None => (),
             Some(Ok(Some(render_results))) => {
                 self.time_counters

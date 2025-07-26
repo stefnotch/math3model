@@ -7,8 +7,8 @@ use render::{
         camera_controller::{self, CameraController, IsCameraController},
         orbitcam_controller::LogarithmicDistance,
     },
-    game::{ModelInfo, ShaderId, ShaderInfo, TextureData, TextureId, TextureInfo},
     input::WinitAppHelper,
+    scene::{Model, ShaderId, ShaderInfo, TextureData, TextureId, TextureInfo},
     time::TimeStats,
 };
 use std::sync::{Arc, Mutex};
@@ -38,7 +38,7 @@ impl WasmApplication {
         })
     }
 
-    pub fn run(&mut self, _canvas: HtmlCanvasElement) -> Result<(), JsError> {
+    pub async fn run(&mut self, _canvas: HtmlCanvasElement) -> Result<(), JsError> {
         let event_loop = EventLoop::<AppCommand>::with_user_event().build()?;
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let event_loop_proxy = event_loop.create_proxy();
@@ -47,7 +47,9 @@ impl WasmApplication {
         let wasm_canvas = WasmCanvas::new(_canvas);
         #[cfg(not(target_arch = "wasm32"))]
         let wasm_canvas = WasmCanvas::new();
-        let mut application = Application::new(event_loop_proxy, |_| {}, wasm_canvas);
+        let mut application = Application::new(event_loop_proxy, |_| {}, wasm_canvas)
+            .await
+            .map_err(|e| JsError::from(&*e))?;
         self.time_stats = application.time_stats.clone();
         application.app.profiler_settings.gpu = true;
         application.app.camera_controller = CameraController::new(
@@ -76,26 +78,23 @@ impl WasmApplication {
     pub async fn update_models(&self, js_models: Vec<WasmModelInfo>) {
         let models = js_models
             .into_iter()
-            .map(|v| ModelInfo {
-                id: v.id,
+            .map(|v| Model {
+                name: v.id,
                 transform: v.transform.into(),
                 material_info: v.material_info.into(),
                 shader_id: ShaderId(v.shader_id),
                 instance_count: v.instance_count,
             })
             .collect::<Vec<_>>();
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
-            app.renderer.as_mut().map(|renderer| {
-                renderer.update_models(&models);
-            });
-            app.app.update_models(models);
+        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+            app.renderer.update_models(&models);
         })
         .await;
     }
 
     pub async fn update_shader(&self, shader_info: WasmShaderInfo) {
         let shader_id = ShaderId(shader_info.id);
-        let info = ShaderInfo {
+        let shader_info = ShaderInfo {
             label: shader_info.label,
             code: shader_info.code,
         };
@@ -104,14 +103,15 @@ impl WasmApplication {
             let shader_id = shader_id.clone();
             move |app| {
                 let on_shader_compiled = app.on_shader_compiled.clone();
-                app.renderer.as_mut().map(|renderer| {
-                    any_spawner::Executor::spawn_local(renderer.set_shader(
-                        shader_id.clone(),
-                        &info,
-                        on_shader_compiled,
-                    ))
+                let shader_result = app.renderer.set_shader(shader_id.clone(), &shader_info);
+                wasm_bindgen_futures::spawn_local(async move {
+                    match shader_result.await {
+                        Ok(()) => {}
+                        Err(err) => {
+                            on_shader_compiled.map(|v| (v.0)(&shader_id, err));
+                        }
+                    }
                 });
-                app.app.set_shader(shader_id, info);
             }
         })
         .await;
@@ -120,10 +120,7 @@ impl WasmApplication {
     pub async fn remove_shader(&self, id: String) {
         let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
             let shader_id = ShaderId(id);
-            app.app.remove_shader(&shader_id);
-            app.renderer
-                .as_mut()
-                .map(|renderer| renderer.remove_shader(&shader_id));
+            app.renderer.remove_shader(&shader_id);
         })
         .await;
     }
@@ -142,10 +139,7 @@ impl WasmApplication {
         let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), {
             let id = id.clone();
             move |app| {
-                app.renderer
-                    .as_mut()
-                    .map(|renderer| renderer.set_texture(id.clone(), &info));
-                app.app.set_texture(id, info);
+                app.renderer.set_texture(id, &info);
             }
         })
         .await;
@@ -153,32 +147,7 @@ impl WasmApplication {
 
     pub async fn remove_texture(&self, id: String) {
         let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
-            let id = TextureId(id);
-            app.app.remove_texture(&id);
-            app.renderer
-                .as_mut()
-                .map(|renderer| renderer.remove_texture(&id));
-        })
-        .await;
-    }
-
-    pub async fn set_lod_stage(&self, stage: Option<web_sys::js_sys::Function>) {
-        let wrapped = stage.map(|stage| -> Arc<dyn Fn(&ShaderId, &str) + 'static> {
-            Arc::new(move |shader_id: &ShaderId, buffer_id: &str| {
-                let this = wasm_bindgen::JsValue::NULL;
-                match stage.call2(
-                    &this,
-                    &JsValue::from_str(&shader_id.0),
-                    &JsValue::from_str(buffer_id),
-                ) {
-                    Ok(_) => (),
-                    Err(e) => error!("Error calling LOD stage: {:?}", e),
-                }
-            })
-        });
-
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
-            app.app.lod_stage = wrapped;
+            app.renderer.remove_texture(&TextureId(id));
         })
         .await;
     }
@@ -224,18 +193,7 @@ impl WasmApplication {
 
     pub async fn set_threshold_factor(&self, factor: f32) {
         let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
-            if let Some(renderer) = &app.renderer {
-                renderer.set_threshold_factor(factor);
-            }
-        })
-        .await;
-    }
-
-    pub async fn set_hot_value(&self, value: f32) {
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
-            if let Some(renderer) = &app.renderer {
-                renderer.set_hot_value(value);
-            }
+            app.renderer.set_threshold_factor(factor);
         })
         .await;
     }

@@ -17,7 +17,6 @@ struct VertexOutput {
     @location(0) tex_coords: vec3f,
 }
 
-// TODO: Remove this code duplication
 struct FragmentOutput {
   @location(0) color: vec4f,
   @location(1) object_id: u32,

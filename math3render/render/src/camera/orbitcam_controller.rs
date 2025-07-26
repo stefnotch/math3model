@@ -15,7 +15,7 @@ impl LogarithmicDistance {
         Self(distance.ln() * 5.0)
     }
 
-  pub  fn distance(&self) -> f32 {
+    pub fn distance(&self) -> f32 {
         (self.0 * 0.2).exp()
     }
 }
@@ -24,7 +24,7 @@ pub struct OrbitcamController {
     pub center: Vec3,
     pub pitch: Angle,
     pub yaw: Angle,
-  pub  logarithmic_distance: LogarithmicDistance,
+    pub logarithmic_distance: LogarithmicDistance,
 }
 
 impl OrbitcamController {
@@ -44,7 +44,6 @@ impl OrbitcamController {
     pub fn update(
         &mut self,
         input: &WindowInputs,
-        delta_time: f32,
         settings: &GeneralControllerSettings,
     ) -> CursorCaptureRequest {
         let mut cursor_capture = CursorCaptureRequest::Free;
@@ -60,12 +59,11 @@ impl OrbitcamController {
         }
 
         if input.mouse.pressed(MouseButton::Left) {
-            self.update_pan_position(mouse_delta, delta_time, settings);
+            self.update_pan_position(mouse_delta, settings);
             cursor_capture = CursorCaptureRequest::LockedAndHidden;
         }
 
-        self.logarithmic_distance.0 +=
-            -1.0 * (input.mouse.scroll_delta.y as f32) * 0.01;
+        self.logarithmic_distance.0 += -1.0 * (input.mouse.scroll_delta.y as f32) * 0.01;
 
         cursor_capture
     }
@@ -86,16 +84,11 @@ impl OrbitcamController {
         self.yaw = Angle::new(new_yaw.radians.rem_euclid(TWO_PI));
     }
 
-    fn update_pan_position(
-        &mut self,
-        direction: Vec2,
-        delta_time: f32,
-        settings: &GeneralControllerSettings,
-    ) {
+    fn update_pan_position(&mut self, direction: Vec2, settings: &GeneralControllerSettings) {
         let horizontal_movement = self.orientation() * (Camera::right() * direction.x * -1.0);
         let vertical_movement = self.orientation() * (Camera::up() * direction.y * 1.0);
-        self.center += horizontal_movement * settings.pan_speed * delta_time;
-        self.center += vertical_movement * settings.pan_speed * delta_time;
+        self.center += horizontal_movement * settings.pan_speed;
+        self.center += vertical_movement * settings.pan_speed;
     }
 }
 

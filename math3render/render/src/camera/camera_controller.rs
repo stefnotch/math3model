@@ -35,7 +35,7 @@ impl ChosenController {
         settings: &GeneralControllerSettings,
     ) -> CursorCaptureRequest {
         match self {
-            ChosenController::Orbitcam(orbitcam) => orbitcam.update(input, delta_time, settings),
+            ChosenController::Orbitcam(orbitcam) => orbitcam.update(input, settings),
             ChosenController::Freecam(freecam) => freecam.update(input, delta_time, settings),
         }
     }

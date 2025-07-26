@@ -6,6 +6,11 @@ type ExampleProject = {
   name: string;
   files: () => Promise<ImportFilesList>;
 };
+const shapesShowcase = import.meta.glob("./example-scene/shapes-showcase/*", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
 
 const temple = import.meta.glob("./example-scene/temple/*", {
   query: "?url",
@@ -49,6 +54,11 @@ export const ExampleProjects: ExampleProject[] = [
     key: crypto.randomUUID(),
     name: "Morph Heart to Sphere",
     files: async () => DefaultScene,
+  },
+  {
+    key: crypto.randomUUID(),
+    name: "Collection of shapes",
+    files: () => toLazyProject(shapesShowcase),
   },
   {
     key: crypto.randomUUID(),

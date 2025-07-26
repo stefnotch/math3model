@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-any_spawner = { version = "0.3.0" }
 anyhow = "1.0"
 console_error_panic_hook = "0.1.7"
 console_log = "1.0"
@@ -17,9 +16,6 @@ render = { path = "../render" }
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
 tsify-next = "0.5.6"
-uuid = { workspace = true, features = [
-  "js",
-] }  # Needed for the UUID crate that the render uses
 wasm-bindgen = "0.2.100"
 wasm-bindgen-futures = "0.4.50"
 web-sys = { version = "0.3.77", features = [
@@ -29,5 +25,6 @@ web-sys = { version = "0.3.77", features = [
 wgpu = { workspace = true, features = [
   "fragile-send-sync-non-atomic-wasm",
   "webgpu",
+  "wgsl",
 ] }
 winit = { workspace = true }

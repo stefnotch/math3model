@@ -1,7 +1,8 @@
 use glam::UVec2;
 
-use crate::game::TextureInfo;
+use crate::scene::TextureInfo;
 
+#[derive(PartialEq, Clone)]
 pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: wgpu::TextureView,
@@ -14,7 +15,7 @@ impl Texture {
         let size = wgpu::Extent3d {
             width: info.width,
             height: info.height,
-            depth_or_array_layers: 1,
+            ..Default::default()
         };
         let desc = wgpu::TextureDescriptor {
             label: None,
@@ -38,7 +39,7 @@ impl Texture {
         };
 
         match &info.data {
-            crate::game::TextureData::Bytes(data) => queue.write_texture(
+            crate::scene::TextureData::Bytes(data) => queue.write_texture(
                 copy_texture,
                 data,
                 wgpu::TexelCopyBufferLayout {
@@ -49,7 +50,7 @@ impl Texture {
                 size,
             ),
             #[cfg(target_arch = "wasm32")]
-            crate::game::TextureData::Image(image_bitmap) => {
+            crate::scene::TextureData::Image(image_bitmap) => {
                 queue.copy_external_image_to_texture(
                     &wgpu::CopyExternalImageSourceInfo {
                         source: wgpu::ExternalImageSource::ImageBitmap(image_bitmap.clone()),
@@ -98,6 +99,14 @@ impl Texture {
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         Self { texture, view }
+    }
+
+    pub fn size2d(&self) -> UVec2 {
+        let size = self.texture.size();
+        UVec2 {
+            x: size.width,
+            y: size.height,
+        }
     }
 }
 

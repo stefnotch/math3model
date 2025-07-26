@@ -1,9 +1,10 @@
+use futures::executor::block_on;
 use glam::{Vec2, Vec3};
 use render::{
     application::{AppCommand, Application, WasmCanvas},
     camera::camera_controller::{self, CameraController, IsCameraController},
-    game::{MaterialInfo, ModelInfo, ShaderId, ShaderInfo},
     input::WinitAppHelper,
+    scene::{MaterialInfo, Model, ShaderId, ShaderInfo},
     transform::Transform,
 };
 use winit::event_loop::EventLoop;
@@ -36,20 +37,24 @@ pub fn run() -> anyhow::Result<()> {
     let event_loop_proxy = event_loop.create_proxy();
     let cache_file = CacheFile::from_file(CACHE_FILE).unwrap_or_default();
     let cached_camera = cache_file.camera.clone();
-    let mut application =
-        Application::new(event_loop_proxy, save_cache(cache_file), WasmCanvas::new());
+    let mut application = block_on(Application::new(
+        event_loop_proxy,
+        save_cache(cache_file),
+        WasmCanvas::new(),
+    ))?;
 
     application.app.profiler_settings.gpu = true;
     let shader_id = ShaderId("HeartSphere.wgsl".into());
-    application.app.set_shader(
+    block_on(application.renderer.set_shader(
         shader_id.clone(),
-        ShaderInfo {
+        &ShaderInfo {
             label: "HeartSphere".into(),
             code: HEART_SPHERE_SHADER_CODE.into(),
         },
-    );
-    application.app.update_models(vec![ModelInfo {
-        id: "0659dcb1-6229-46bd-a306-6ceebfcf2e46".into(),
+    ))
+    .unwrap();
+    application.renderer.update_models(&[Model {
+        name: "".into(),
         transform: Transform {
             position: Vec3::new(0.0, 0.0, 0.0),
             ..Default::default()

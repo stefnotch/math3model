@@ -1,7 +1,7 @@
 use crate::{
-    buffer::TypedBuffer,
+    buffer::{DeviceBufferExt, TypedBuffer},
     camera::Camera,
-    shaders::{pbr, render_patches, uniforms_0},
+    shaders::{compute_patches, pbr, render_patches, uniforms_0},
     time::FrameTime,
 };
 use glam::{Mat4, UVec2, Vec2, Vec4};
@@ -16,117 +16,127 @@ pub struct SceneData {
     pub camera_buffer: TypedBuffer<render_patches::Camera>,
     pub light_buffer: TypedBuffer<render_patches::Lights>,
     pub linear_sampler: wgpu::Sampler,
+
+    pub scene_bind_group: render_patches::bind_groups::BindGroup0,
+    // TODO: Remove duplication
+    pub scene_bind_group_compute: compute_patches::bind_groups::BindGroup0,
 }
 
 impl SceneData {
     pub fn new(device: &wgpu::Device) -> Self {
+        let time_buffer = device.uniform_buffer(
+            "Time Buffer",
+            &uniforms_0::Time {
+                elapsed: 0.0,
+                delta: 1000.0 / 60.0,
+                frame: 0,
+            },
+            wgpu::BufferUsages::COPY_DST,
+        );
+        let screen_buffer = device.uniform_buffer(
+            "Screen Buffer",
+            &uniforms_0::Screen {
+                resolution: UVec2::ONE,
+                inv_resolution: Vec2::ONE,
+            },
+            wgpu::BufferUsages::COPY_DST,
+        );
+        let mouse_buffer = device.uniform_buffer(
+            "Mouse Buffer",
+            &uniforms_0::Mouse {
+                pos: Vec2::ZERO,
+                buttons: 0,
+            },
+            wgpu::BufferUsages::COPY_DST,
+        );
+        let extra_buffer = device.uniform_buffer(
+            "Mouse Buffer",
+            &uniforms_0::Extra { hot_value: 0. },
+            wgpu::BufferUsages::COPY_DST,
+        );
+        let camera_buffer = device.uniform_buffer(
+            "Camera Buffer",
+            &render_patches::Camera {
+                view: Mat4::IDENTITY,
+                projection: Mat4::IDENTITY,
+                world_position: Vec4::ZERO,
+            },
+            wgpu::BufferUsages::COPY_DST,
+        );
+        let light_buffer = device.storage_buffer(
+            "Light Buffer",
+            &render_patches::Lights {
+                ambient: Vec4::new(0.05, 0.05, 0.05, 0.0),
+                points_length: 4,
+                points: vec![
+                    pbr::LightSource {
+                        position_range: glam::Vec3::new(1.0, -4.0, 1.0).normalize().extend(1.0),
+                        color_intensity: Vec4::new(0.5, 0.55, 0.5, 0.9),
+                        light_type: pbr::LIGHT_TYPE_DIRECTIONAL,
+                    },
+                    pbr::LightSource {
+                        position_range: Vec4::new(0.0, 8.0, 4.0, 80.0),
+                        color_intensity: Vec4::new(1.0, 1.0, 1.0, 1.0),
+                        light_type: pbr::LIGHT_TYPE_POINT,
+                    },
+                    pbr::LightSource {
+                        position_range: Vec4::new(1.0, 8.0, -6.0, 70.0),
+                        color_intensity: Vec4::new(1.0, 1.0, 1.0, 1.5),
+                        light_type: pbr::LIGHT_TYPE_POINT,
+                    },
+                    pbr::LightSource {
+                        position_range: Vec4::new(0.0, -8.0, 0.0, 80.0),
+                        color_intensity: Vec4::new(0.8, 0.8, 1.0, 0.9),
+                        light_type: pbr::LIGHT_TYPE_POINT,
+                    },
+                ],
+            },
+            wgpu::BufferUsages::COPY_DST,
+        );
+        let linear_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+            address_mode_u: wgpu::AddressMode::Repeat,
+            address_mode_v: wgpu::AddressMode::Repeat,
+            address_mode_w: wgpu::AddressMode::Repeat,
+            mag_filter: wgpu::FilterMode::Linear,
+            min_filter: wgpu::FilterMode::Linear,
+            mipmap_filter: wgpu::FilterMode::Nearest,
+            ..Default::default()
+        });
+        let scene_bind_group = render_patches::bind_groups::BindGroup0::from_bindings(
+            device,
+            render_patches::bind_groups::BindGroupLayout0 {
+                camera: camera_buffer.as_buffer_binding(),
+                time: time_buffer.as_buffer_binding(),
+                screen: screen_buffer.as_buffer_binding(),
+                extra: extra_buffer.as_buffer_binding(),
+                mouse: mouse_buffer.as_buffer_binding(),
+                lights: light_buffer.as_buffer_binding(),
+                linear_sampler: &linear_sampler,
+            },
+        );
+        let scene_bind_group_compute = compute_patches::bind_groups::BindGroup0::from_bindings(
+            device,
+            compute_patches::bind_groups::BindGroupLayout0 {
+                time: time_buffer.as_buffer_binding(),
+                screen: screen_buffer.as_buffer_binding(),
+                extra: extra_buffer.as_buffer_binding(),
+                mouse: mouse_buffer.as_buffer_binding(),
+            },
+        );
         Self {
-            time_buffer: TypedBuffer::new_uniform(
-                device,
-                "Time Buffer",
-                &uniforms_0::Time {
-                    elapsed: 0.0,
-                    delta: 1000.0 / 60.0,
-                    frame: 0,
-                },
-                wgpu::BufferUsages::COPY_DST,
-            ),
-            screen_buffer: TypedBuffer::new_uniform(
-                device,
-                "Screen Buffer",
-                &uniforms_0::Screen {
-                    resolution: UVec2::ONE,
-                    inv_resolution: Vec2::ONE,
-                },
-                wgpu::BufferUsages::COPY_DST,
-            ),
-            mouse_buffer: TypedBuffer::new_uniform(
-                device,
-                "Mouse Buffer",
-                &uniforms_0::Mouse {
-                    pos: Vec2::ZERO,
-                    buttons: 0,
-                },
-                wgpu::BufferUsages::COPY_DST,
-            ),
-            extra_buffer: TypedBuffer::new_uniform(
-                device,
-                "Mouse Buffer",
-                &uniforms_0::Extra { hot_value: 0. },
-                wgpu::BufferUsages::COPY_DST,
-            ),
-            camera_buffer: TypedBuffer::new_uniform(
-                device,
-                "Camera Buffer",
-                &render_patches::Camera {
-                    view: Mat4::IDENTITY,
-                    projection: Mat4::IDENTITY,
-                    world_position: Vec4::ZERO,
-                },
-                wgpu::BufferUsages::COPY_DST,
-            ),
-            light_buffer: TypedBuffer::new_storage(
-                device,
-                "Light Buffer",
-                &render_patches::Lights {
-                    ambient: Vec4::new(0.05, 0.05, 0.05, 0.0),
-                    points_length: 4,
-                    points: vec![
-                        pbr::LightSource {
-                            position_range: glam::Vec3::new(1.0, -4.0, 1.0).normalize().extend(1.0),
-                            color_intensity: Vec4::new(0.5, 0.55, 0.5, 0.9),
-                            light_type: pbr::LIGHT_TYPE_DIRECTIONAL,
-                        },
-                        pbr::LightSource {
-                            position_range: Vec4::new(0.0, 8.0, 4.0, 80.0),
-                            color_intensity: Vec4::new(1.0, 1.0, 1.0, 1.0),
-                            light_type: pbr::LIGHT_TYPE_POINT,
-                        },
-                        pbr::LightSource {
-                            position_range: Vec4::new(1.0, 8.0, -6.0, 70.0),
-                            color_intensity: Vec4::new(1.0, 1.0, 1.0, 1.5),
-                            light_type: pbr::LIGHT_TYPE_POINT,
-                        },
-                        pbr::LightSource {
-                            position_range: Vec4::new(0.0, -8.0, 0.0, 80.0),
-                            color_intensity: Vec4::new(0.8, 0.8, 1.0, 0.9),
-                            light_type: pbr::LIGHT_TYPE_POINT,
-                        },
-                    ],
-                },
-                wgpu::BufferUsages::COPY_DST,
-            ),
-            linear_sampler: device.create_sampler(&wgpu::SamplerDescriptor {
-                address_mode_u: wgpu::AddressMode::Repeat,
-                address_mode_v: wgpu::AddressMode::Repeat,
-                address_mode_w: wgpu::AddressMode::Repeat,
-                mag_filter: wgpu::FilterMode::Linear,
-                min_filter: wgpu::FilterMode::Linear,
-                mipmap_filter: wgpu::FilterMode::Nearest,
-                ..Default::default()
-            }),
+            time_buffer,
+            screen_buffer,
+            mouse_buffer,
+            extra_buffer,
+            camera_buffer,
+            light_buffer,
+            linear_sampler,
+            scene_bind_group,
+            scene_bind_group_compute,
         }
     }
 
-    pub fn as_bind_group_0(
-        &self,
-        device: &wgpu::Device,
-    ) -> render_patches::bind_groups::BindGroup0 {
-        render_patches::bind_groups::BindGroup0::from_bindings(
-            device,
-            render_patches::bind_groups::BindGroupLayout0 {
-                camera: self.camera_buffer.as_entire_buffer_binding(),
-                time: self.time_buffer.as_entire_buffer_binding(),
-                screen: self.screen_buffer.as_entire_buffer_binding(),
-                extra: self.extra_buffer.as_entire_buffer_binding(),
-                mouse: self.mouse_buffer.as_entire_buffer_binding(),
-                lights: self.light_buffer.as_entire_buffer_binding(),
-                linear_sampler: &self.linear_sampler,
-            },
-        )
-    }
-
-    pub fn write_buffers(
+    pub fn update(
         &self,
         size: UVec2,
         render_data: &FrameData,

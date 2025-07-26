@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use render::game::TextureId;
+use render::scene::TextureId;
 use serde::{Deserialize, Serialize};
 use tsify_next::Tsify;
 
@@ -65,9 +65,9 @@ pub struct WasmMaterialInfo {
     pub texture_scale: [f32; 2],
 }
 
-impl From<WasmMaterialInfo> for render::game::MaterialInfo {
+impl From<WasmMaterialInfo> for render::scene::MaterialInfo {
     fn from(v: WasmMaterialInfo) -> Self {
-        render::game::MaterialInfo {
+        render::scene::MaterialInfo {
             color: v.color.into(),
             emissive: v.emissive.into(),
             roughness: v.roughness,

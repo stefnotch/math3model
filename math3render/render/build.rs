@@ -94,17 +94,7 @@ impl<'a> ShaderCompiler<'a> {
             .add_shader_module(
                 &compiled_code,
                 None,
-                WriteOptions {
-                    // We need to use bytemuck for vertex buffer
-                    derive_bytemuck_vertex: true,
-                    derive_bytemuck_host_shareable: false,
-                    // And encase for uniform buffers and storage buffers
-                    derive_encase_host_shareable: true,
-                    derive_serde: false,
-                    matrix_vector_types: MatrixVectorTypes::Glam,
-                    rustfmt: false,
-                    validate: None,
-                },
+                self.write_options,
                 wgsl_to_wgpu::ModulePath {
                     components: vec![shader_name.to_string()],
                 },

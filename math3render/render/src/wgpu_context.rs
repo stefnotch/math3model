@@ -5,27 +5,25 @@ use log::info;
 use wgpu_profiler::{GpuProfiler, GpuProfilerSettings};
 use winit::window::Window;
 
-use super::WindowOrFallback;
+/// Guaranteed by the WebGPU spec
+/// According to https://vulkan.gpuinfo.org/listsurfaceformats.php?platform=linux
+/// it exists on basically all devices, except for Android
+pub const VIEW_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Bgra8UnormSrgb;
 
+use crate::window_or_fallback::WindowOrFallback;
 pub struct WgpuContext {
     pub instance: wgpu::Instance,
+    pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
-    pub view_format: wgpu::TextureFormat,
 }
 
 impl WgpuContext {
-    pub async fn new(window: WindowOrFallback) -> anyhow::Result<(Self, SurfaceOrFallback)> {
-        let size = window.size().max(UVec2::ONE);
+    pub async fn new() -> anyhow::Result<Self> {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             ..Default::default()
         });
-
-        let surface = window
-            .as_window()
-            .map(|window| instance.create_surface(window))
-            .transpose()?;
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -48,68 +46,11 @@ impl WgpuContext {
             .await
             .unwrap();
 
-        let (view_format, surface_format) = match &surface {
-            Some(surface) => {
-                let surface_format = surface
-                    .get_capabilities(&adapter)
-                    .formats
-                    .first()
-                    .cloned()
-                    .ok_or_else(|| anyhow::anyhow!("No valid surface format found"))?;
-                let view_format = if surface_format.is_srgb() {
-                    surface_format
-                } else {
-                    surface_format.add_srgb_suffix()
-                };
-                (view_format, surface_format)
-            }
-            None => (
-                wgpu::TextureFormat::Bgra8UnormSrgb,
-                wgpu::TextureFormat::Bgra8UnormSrgb,
-            ),
-        };
-
-        let surface_or_fallback = match surface {
-            Some(surface) => {
-                let config = wgpu::SurfaceConfiguration {
-                    format: surface_format,
-                    view_formats: vec![view_format],
-                    present_mode: wgpu::PresentMode::AutoVsync,
-                    ..surface
-                        .get_default_config(&adapter, size.x, size.y)
-                        .ok_or_else(|| anyhow::anyhow!("No default surface config found"))?
-                };
-                surface.configure(&device, &config);
-                SurfaceOrFallback::Surface {
-                    surface,
-                    config,
-                    window: window
-                        .as_window()
-                        .expect("Expected window if there is a surface"),
-                    size,
-                }
-            }
-            None => SurfaceOrFallback::Fallback {
-                texture: create_fallback_texture(&device, size, view_format),
-                size,
-            },
-        };
-
-        Ok((
-            WgpuContext {
-                instance,
-                device,
-                queue,
-                view_format,
-            },
-            surface_or_fallback,
-        ))
-    }
-
-    fn create_view(&self, texture: &wgpu::Texture) -> wgpu::TextureView {
-        texture.create_view(&wgpu::TextureViewDescriptor {
-            format: Some(self.view_format),
-            ..Default::default()
+        Ok(WgpuContext {
+            instance,
+            adapter,
+            device,
+            queue,
         })
     }
 }
@@ -138,7 +79,7 @@ impl SurfaceTexture {
     }
 }
 
-pub enum SurfaceOrFallback {
+pub enum WgpuSurface {
     Surface {
         surface: wgpu::Surface<'static>,
         config: wgpu::SurfaceConfiguration,
@@ -151,11 +92,46 @@ pub enum SurfaceOrFallback {
     },
 }
 
-impl SurfaceOrFallback {
+impl WgpuSurface {
+    pub fn new(context: &WgpuContext, window: WindowOrFallback) -> anyhow::Result<Self> {
+        let size = window.size().max(UVec2::ONE);
+
+        let surface = window
+            .as_window()
+            .map(|window| context.instance.create_surface(window))
+            .transpose()?;
+
+        match surface {
+            Some(surface) => {
+                let config = wgpu::SurfaceConfiguration {
+                    format: wgpu::TextureFormat::Bgra8Unorm,
+                    view_formats: vec![VIEW_FORMAT],
+                    present_mode: wgpu::PresentMode::AutoVsync,
+                    ..surface
+                        .get_default_config(&context.adapter, size.x, size.y)
+                        .ok_or_else(|| anyhow::anyhow!("No default surface config found"))?
+                };
+                surface.configure(&context.device, &config);
+                Ok(WgpuSurface::Surface {
+                    surface,
+                    config,
+                    window: window
+                        .as_window()
+                        .expect("Expected window if there is a surface"),
+                    size,
+                })
+            }
+            None => Ok(WgpuSurface::Fallback {
+                texture: create_fallback_texture(&context.device, size),
+                size,
+            }),
+        }
+    }
+
     pub fn size(&self) -> UVec2 {
         match self {
-            SurfaceOrFallback::Surface { size, .. } => *size,
-            SurfaceOrFallback::Fallback { size, .. } => *size,
+            WgpuSurface::Surface { size, .. } => *size,
+            WgpuSurface::Fallback { size, .. } => *size,
         }
     }
 
@@ -167,7 +143,7 @@ impl SurfaceOrFallback {
             return None;
         }
         match self {
-            SurfaceOrFallback::Surface {
+            WgpuSurface::Surface {
                 surface,
                 config,
                 size,
@@ -179,8 +155,8 @@ impl SurfaceOrFallback {
                 *size = new_size;
                 Some(new_size)
             }
-            SurfaceOrFallback::Fallback { texture, size } => {
-                *texture = create_fallback_texture(&context.device, new_size, context.view_format);
+            WgpuSurface::Fallback { texture, size } => {
+                *texture = create_fallback_texture(&context.device, new_size);
                 *size = new_size;
                 Some(new_size)
             }
@@ -189,40 +165,41 @@ impl SurfaceOrFallback {
 
     pub fn recreate_swapchain(&self, context: &WgpuContext) {
         match self {
-            SurfaceOrFallback::Surface {
+            WgpuSurface::Surface {
                 surface, config, ..
             } => {
                 surface.configure(&context.device, config);
             }
-            SurfaceOrFallback::Fallback { .. } => {
+            WgpuSurface::Fallback { .. } => {
                 // No-op
             }
         }
     }
 
-    pub fn surface_texture(
-        &self,
-        context: &WgpuContext,
-    ) -> Result<SurfaceTexture, wgpu::SurfaceError> {
+    pub fn surface_texture(&self) -> Result<SurfaceTexture, wgpu::SurfaceError> {
         match self {
-            SurfaceOrFallback::Surface {
+            WgpuSurface::Surface {
                 surface, window, ..
             } => surface.get_current_texture().map(|surface_texture| {
-                let view = context.create_view(&surface_texture.texture);
+                let view = surface_texture
+                    .texture
+                    .create_view(&wgpu::TextureViewDescriptor {
+                        format: Some(VIEW_FORMAT),
+                        ..Default::default()
+                    });
                 SurfaceTexture::Surface(surface_texture, view, window.clone())
             }),
-            SurfaceOrFallback::Fallback { texture, .. } => {
-                Ok(SurfaceTexture::Fallback(context.create_view(&texture)))
-            }
+            WgpuSurface::Fallback { texture, .. } => Ok(SurfaceTexture::Fallback(
+                texture.create_view(&wgpu::TextureViewDescriptor {
+                    format: Some(VIEW_FORMAT),
+                    ..Default::default()
+                }),
+            )),
         }
     }
 }
 
-fn create_fallback_texture(
-    device: &wgpu::Device,
-    size: UVec2,
-    format: wgpu::TextureFormat,
-) -> wgpu::Texture {
+fn create_fallback_texture(device: &wgpu::Device, size: UVec2) -> wgpu::Texture {
     device.create_texture(&wgpu::TextureDescriptor {
         label: Some("Fallback surface"),
         size: wgpu::Extent3d {
@@ -233,7 +210,7 @@ fn create_fallback_texture(
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
-        format,
+        format: VIEW_FORMAT,
         usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
         view_formats: &[],
     })

@@ -35,6 +35,7 @@ struct ForceRenderFlag {
 }
 
 // Group 0 is for constants that change once per frame at most
+// Matches group 0 from render_patches
 @group(0) @binding(0) var<uniform> time : Time;
 @group(0) @binding(1) var<uniform> screen : Screen;
 @group(0) @binding(2) var<uniform> mouse : Mouse;
@@ -43,17 +44,17 @@ struct ForceRenderFlag {
 // Group 1 is for things that change once per model
 // TODO: Read back the patches_length on the CPU to know when we're going out of bounds
 // (And how far out of bounds)
-@group(1) @binding(0) var<uniform> input_buffer : InputBuffer;
-@group(1) @binding(1) var<storage, read_write> render_buffer_2 : RenderBuffer;
-@group(1) @binding(2) var<storage, read_write> render_buffer_4 : RenderBuffer;
-@group(1) @binding(3) var<storage, read_write> render_buffer_8 : RenderBuffer;
-@group(1) @binding(4) var<storage, read_write> render_buffer_16 : RenderBuffer;
-@group(1) @binding(5) var<storage, read_write> render_buffer_32 : RenderBuffer;
+@group(1) @binding(0) var<storage, read_write> render_buffer_2 : RenderBuffer;
+@group(1) @binding(1) var<storage, read_write> render_buffer_4 : RenderBuffer;
+@group(1) @binding(2) var<storage, read_write> render_buffer_8 : RenderBuffer;
+@group(1) @binding(3) var<storage, read_write> render_buffer_16 : RenderBuffer;
+@group(1) @binding(4) var<storage, read_write> render_buffer_32 : RenderBuffer;
 // Group 2 is for things that change multiple times per model
-@group(2) @binding(0) var<storage, read_write> dispatch_next : DispatchIndirectArgs;
-@group(2) @binding(1) var<storage, read> patches_from_buffer : PatchesRead;
-@group(2) @binding(2) var<storage, read_write> patches_to_buffer : Patches;
-@group(2) @binding(3) var<uniform> force_render: ForceRenderFlag;
+@group(2) @binding(0) var<uniform> input_buffer : InputBuffer;
+@group(2) @binding(1) var<storage, read_write> dispatch_next : DispatchIndirectArgs;
+@group(2) @binding(2) var<storage, read> patches_from_buffer : PatchesRead;
+@group(2) @binding(3) var<storage, read_write> patches_to_buffer : Patches;
+@group(2) @binding(4) var<uniform> force_render: ForceRenderFlag;
 
 fn triangle_area(a: vec3f, b: vec3f, c: vec3f) -> f32 {
     return 0.5 * length(cross(b - a, c - a));
