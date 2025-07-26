@@ -99,20 +99,17 @@ impl WasmApplication {
             code: shader_info.code,
         };
 
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), {
-            let shader_id = shader_id.clone();
-            move |app| {
-                let on_shader_compiled = app.on_shader_compiled.clone();
-                let shader_result = app.renderer.set_shader(shader_id.clone(), &shader_info);
-                wasm_bindgen_futures::spawn_local(async move {
-                    match shader_result.await {
-                        Ok(()) => {}
-                        Err(err) => {
-                            on_shader_compiled.map(|v| (v.0)(&shader_id, err));
-                        }
+        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+            let on_shader_compiled = app.on_shader_compiled.clone();
+            let shader_result = app.renderer.set_shader(shader_id.clone(), &shader_info);
+            wasm_bindgen_futures::spawn_local(async move {
+                match shader_result.await {
+                    Ok(()) => {}
+                    Err(err) => {
+                        on_shader_compiled.map(|v| (v.0)(&shader_id, err));
                     }
-                });
-            }
+                }
+            });
         })
         .await;
     }

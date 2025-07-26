@@ -13,9 +13,11 @@ export class WgpuEngine {
   private taskQueue: Promise<void> = Promise.resolve();
   private constructor(private engine: WasmApplication) {}
   static createEngine(canvasElement: HTMLCanvasElement) {
-    const engine = new WasmApplication();
-    engine.run(canvasElement);
-    return new WgpuEngine(engine);
+    const wgpuEngine = new WgpuEngine(new WasmApplication());
+    wgpuEngine.taskQueue = wgpuEngine.taskQueue.then(() =>
+      wgpuEngine.engine.run(canvasElement)
+    );
+    return wgpuEngine;
   }
   async updateModels(js_models: WasmModelInfo[]) {
     this.taskQueue = this.taskQueue.then(() =>

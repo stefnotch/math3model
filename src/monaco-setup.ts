@@ -27,12 +27,6 @@ self.MonacoEnvironment = {
   },
 };
 
-console.log(
-  toJSONSchema(SceneFileSchema, {
-    target: "draft-7",
-  })
-);
-
 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
   validate: true,
   schemas: [
