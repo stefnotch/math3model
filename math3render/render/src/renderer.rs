@@ -20,6 +20,7 @@ use wgpu_profiler::GpuProfiler;
 
 use crate::{
     game::GameRes,
+    gui::GuiRender,
     input::WindowCursorCapture,
     renderer::{parametric_model::ParametricModel, parametric_renderer::ParametricRenderer},
     scene::{Model, ShaderId, TextureId, TextureInfo},
@@ -149,6 +150,7 @@ impl GpuApplication {
         &mut self,
         surface: &mut WgpuSurface,
         game: &GameRes,
+        gui_render: GuiRender<'_>,
     ) -> Result<Option<RenderResults>, wgpu::SurfaceError> {
         self.update_cursor_capture(surface, game.cursor_capture);
 
@@ -168,7 +170,7 @@ impl GpuApplication {
             mouse_held: game.mouse_held,
         };
 
-        self.render_internal(surface, &render_data)
+        self.render_internal(surface, &render_data, gui_render)
     }
 
     pub fn resize(&mut self, surface: &mut WgpuSurface, new_size: UVec2) {
@@ -213,6 +215,7 @@ impl GpuApplication {
         &mut self,
         surface: &WgpuSurface,
         render_data: &FrameData,
+        mut gui_render: GuiRender<'_>,
     ) -> Result<Option<RenderResults>, wgpu::SurfaceError> {
         let context = &self.context;
 
@@ -266,54 +269,62 @@ impl GpuApplication {
                 );
             }
 
-            let mut render_pass = commands.scoped_render_pass(
-                "Render Pass",
-                wgpu::RenderPassDescriptor {
-                    label: Some("Render Pass"),
-                    color_attachments: &[
-                        Some(wgpu::RenderPassColorAttachment {
-                            view: surface_texture.texture_view(),
-                            resolve_target: None,
-                            ops: Default::default(),
-                            depth_slice: Default::default(),
-                        }),
-                        Some(wgpu::RenderPassColorAttachment {
-                            view: &self.object_id_texture.view,
-                            resolve_target: None,
-                            ops: Default::default(),
-                            depth_slice: Default::default(),
-                        }),
-                    ],
-                    depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                        view: &self.depth_texture.view,
-                        depth_ops: Some(wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(0.0), // Reverse Z checklist https://iolite-engine.com/blog_posts/reverse_z_cheatsheet
-                            store: wgpu::StoreOp::Store,
-                        }),
-                        stencil_ops: None,
+            let render_pass_descriptor = wgpu::RenderPassDescriptor {
+                label: Some("Render Pass"),
+                color_attachments: &[
+                    Some(wgpu::RenderPassColorAttachment {
+                        view: surface_texture.texture_view(),
+                        resolve_target: None,
+                        ops: Default::default(),
+                        depth_slice: Default::default(),
                     }),
-                    timestamp_writes: None,
-                    occlusion_query_set: None,
-                },
-            );
+                    Some(wgpu::RenderPassColorAttachment {
+                        view: &self.object_id_texture.view,
+                        resolve_target: None,
+                        ops: Default::default(),
+                        depth_slice: Default::default(),
+                    }),
+                ],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth_texture.view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(0.0), // Reverse Z checklist https://iolite-engine.com/blog_posts/reverse_z_cheatsheet
+                        store: wgpu::StoreOp::Store,
+                    }),
+                    stencil_ops: None,
+                }),
+                timestamp_writes: None,
+                occlusion_query_set: None,
+            };
 
-            // Render the models
-            for (_, parametric_model) in self.models.iter_mut() {
-                parametric_model.render(
-                    context,
-                    &mut render_pass,
-                    &self.scene_data.scene_bind_group,
-                    &self.parametric_renderer.quad_meshes,
-                );
+            {
+                let mut render_pass =
+                    commands.scoped_render_pass("Render Pass", render_pass_descriptor.clone());
+
+                // Render the models
+                for (_, parametric_model) in self.models.iter_mut() {
+                    parametric_model.render(
+                        context,
+                        &mut render_pass,
+                        &self.scene_data.scene_bind_group,
+                        &self.parametric_renderer.quad_meshes,
+                    );
+                }
+
+                // Skybox is rendered after opaque objects
+                self.skybox.update(context, surface, render_data);
+                self.skybox.render(&mut render_pass);
+
+                // And now overlay transparent objects
+                self.ground_plane.update(context, surface, render_data);
+                self.ground_plane.render(&mut render_pass);
             }
-
-            // Skybox is rendered after opaque objects
-            self.skybox.update(context, surface, render_data);
-            self.skybox.render(&mut render_pass);
-
-            // And now overlay transparent objects
-            self.ground_plane.update(context, surface, render_data);
-            self.ground_plane.render(&mut render_pass);
+            gui_render.render(
+                context,
+                surface,
+                &surface_texture.texture_view(),
+                &mut commands.recorder,
+            );
         };
         self.profiler.resolve_queries(&mut command_encoder);
         context
@@ -325,6 +336,8 @@ impl GpuApplication {
         }
 
         surface_texture.present();
+
+        gui_render.free_textures();
 
         self.profiler.end_frame().unwrap();
         let render_results = Some(RenderResults {

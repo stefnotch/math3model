@@ -2,6 +2,7 @@ pub mod application;
 pub mod buffer;
 pub mod camera;
 pub mod game;
+pub mod gui;
 pub mod input;
 pub mod mesh;
 pub mod renderer;

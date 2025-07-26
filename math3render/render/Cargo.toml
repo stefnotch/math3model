@@ -10,6 +10,8 @@ bench = false
 [dependencies]
 anyhow = "1.0"
 bytemuck = { workspace = true }
+egui = { version = " 0.32.0" }
+egui-wgpu = { version = " 0.32.0" }
 encase = { workspace = true }
 futures = { version = "0.3.31", default-features = false, features = [
   "executor",

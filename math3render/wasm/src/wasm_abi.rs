@@ -32,13 +32,6 @@ impl From<WasmPosition> for glam::Vec3 {
     }
 }
 
-#[derive(Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct WasmFrameTime {
-    pub avg_delta_time: f32,
-    pub avg_gpu_time: f32,
-}
-
 impl From<WasmTransform> for render::transform::Transform {
     fn from(v: WasmTransform) -> Self {
         render::transform::Transform {

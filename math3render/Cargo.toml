@@ -15,5 +15,12 @@ nanoserde = { version = "0.2.1", default-features = false, features = [
 wgpu = { version = "26.0.1", default-features = false }
 winit = { version = "0.30.11" }
 
+[patch.crates-io]
+egui-wgpu = { branch = "wgpu-26", git = "https://github.com/torokati44/egui.git" }
+
+[patch."https://github.com/torokati44/egui"]
+egui = "*"
+epaint = "*"
+
 [profile.release]
 debug = true

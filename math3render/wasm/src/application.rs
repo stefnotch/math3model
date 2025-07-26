@@ -9,22 +9,17 @@ use render::{
     },
     input::WinitAppHelper,
     scene::{Model, ShaderId, ShaderInfo, TextureData, TextureId, TextureInfo},
-    time::TimeStats,
 };
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use wasm_bindgen::{JsError, JsValue, prelude::wasm_bindgen};
 use web_sys::{HtmlCanvasElement, ImageBitmap};
 use winit::event_loop::{EventLoop, EventLoopProxy};
 
-use crate::wasm_abi::{
-    WasmCompilationMessage, WasmFrameTime, WasmModelInfo, WasmPosition, WasmShaderInfo,
-};
+use crate::wasm_abi::{WasmCompilationMessage, WasmModelInfo, WasmPosition, WasmShaderInfo};
 
 #[wasm_bindgen]
 pub struct WasmApplication {
     event_loop_proxy: Option<EventLoopProxy<AppCommand>>,
-    last_time_stats: TimeStats,
-    time_stats: Arc<Mutex<TimeStats>>,
 }
 
 #[wasm_bindgen]
@@ -33,8 +28,6 @@ impl WasmApplication {
     pub fn new() -> Result<WasmApplication, JsError> {
         Ok(Self {
             event_loop_proxy: None,
-            last_time_stats: Default::default(),
-            time_stats: Default::default(),
         })
     }
 
@@ -50,7 +43,6 @@ impl WasmApplication {
         let mut application = Application::new(event_loop_proxy, |_| {}, wasm_canvas)
             .await
             .map_err(|e| JsError::from(&*e))?;
-        self.time_stats = application.time_stats.clone();
         application.app.profiler_settings.gpu = true;
         application.app.camera_controller = CameraController::new(
             render::camera::orbitcam_controller::OrbitcamController {
@@ -176,16 +168,6 @@ impl WasmApplication {
             app.on_shader_compiled = wrapped;
         })
         .await;
-    }
-
-    pub fn get_frame_time(&mut self) -> WasmFrameTime {
-        if let Ok(new_stats) = self.time_stats.try_lock() {
-            self.last_time_stats = new_stats.clone();
-        }
-        WasmFrameTime {
-            avg_delta_time: self.last_time_stats.avg_delta_time,
-            avg_gpu_time: self.last_time_stats.avg_gpu_time,
-        }
     }
 
     pub async fn set_threshold_factor(&self, factor: f32) {

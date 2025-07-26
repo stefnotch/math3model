@@ -22,7 +22,7 @@ import {
 } from "@/filesystem/scene-file.ts";
 import type { WgpuEngine } from "@/engine/wgpu-engine.ts";
 import type { ObjectUpdate } from "./input/object-update.ts";
-import type { WasmFrameTime, WasmModelInfo } from "math3render/pkg/web";
+import type { WasmModelInfo } from "math3render/pkg/web";
 import { useErrorStore } from "@/stores/error-store.ts";
 import { syncFilesystem } from "@/engine/sync-filesystem.ts";
 import { DefaultScene } from "@/scenes/default-scene.ts";
@@ -43,17 +43,6 @@ syncFilesystem(props.fs, props.engine);
 const store = useStore();
 const errorsStore = useErrorStore();
 const fsStore = useFsStore();
-const fpsCounter = ref<WasmFrameTime>({ avg_delta_time: 0, avg_gpu_time: 0 });
-{
-  const timer = setInterval(() => {
-    props.engine.getFrameTime().then((v) => {
-      fpsCounter.value = v;
-    });
-  }, 300);
-  onUnmounted(() => {
-    clearInterval(timer);
-  });
-}
 
 const isFirstTimeVisitor = useLocalStorage("is-first-time-visitor", true);
 
@@ -338,10 +327,6 @@ function removeModel(ids: string[]) {
                     :engine="props.engine"
                     :models="scene.state.value.models"
                   />
-                </div>
-                <div class="absolute bottom-0 left-1 text-gray-900">
-                  CPU {{ (fpsCounter.avg_delta_time * 1000.0).toFixed(1) }} ms /
-                  GPU {{ (fpsCounter.avg_gpu_time * 1000.0).toFixed(1) }} ms
                 </div>
               </div>
               <div v-if="sceneDescription">

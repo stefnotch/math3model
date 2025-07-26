@@ -3,7 +3,6 @@ import init, {
   type WasmModelInfo,
   type WasmShaderInfo,
   type WasmCompilationMessage,
-  type WasmFrameTime,
 } from "../../math3render/pkg/web.js";
 
 await init();
@@ -52,14 +51,6 @@ export class WgpuEngine {
       this.engine.set_on_shader_compiled(callback)
     );
     await this.taskQueue;
-  }
-  async getFrameTime(): Promise<WasmFrameTime> {
-    let { promise, resolve } = Promise.withResolvers<WasmFrameTime>();
-    this.taskQueue = this.taskQueue.then(() => {
-      resolve(this.engine.get_frame_time());
-    });
-    await this.taskQueue;
-    return promise;
   }
   async setThresholdFactor(factor: number) {
     this.taskQueue = this.taskQueue.then(() =>

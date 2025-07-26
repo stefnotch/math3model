@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use glam::UVec2;
 use log::{error, info, warn};
@@ -9,10 +9,11 @@ use winit::{
 
 use crate::{
     game::GameRes,
+    gui::Gui,
     input::{InputHandler, WindowInputs},
     renderer::GpuApplication,
     scene::ShaderId,
-    time::{TimeCounters, TimeStats},
+    time::TimeCounters,
     wgpu_context::{WgpuContext, WgpuSurface},
     window_or_fallback::WindowOrFallback,
 };
@@ -34,10 +35,10 @@ impl WasmCanvas {
 
 pub struct Application {
     pub app: GameRes,
+    pub gui: Gui,
     window: Option<Arc<Window>>,
     pub renderer: GpuApplication,
     pub surface: Option<WgpuSurface>,
-    pub time_stats: Arc<Mutex<TimeStats>>,
     time_counters: TimeCounters,
     _app_commands: EventLoopProxy<AppCommand>,
     on_exit_callback: Option<Box<dyn FnOnce(&mut Application)>>,
@@ -55,11 +56,11 @@ impl Application {
     ) -> anyhow::Result<Self> {
         let context = WgpuContext::new().await?;
         Ok(Self {
-            window: None,
             app: GameRes::new(),
+            gui: Gui::new(&context),
+            window: None,
             renderer: GpuApplication::new(context),
             surface: None,
-            time_stats: Default::default(),
             time_counters: TimeCounters::default(),
             _app_commands: app_commands,
             on_exit_callback: Some(Box::new(on_exit)),
@@ -216,47 +217,40 @@ impl InputHandler for Application {
             }
         }
 
-        let time_stats = self.time_counters.stats();
-
-        #[cfg(not(target_arch = "wasm32"))]
-        if self.time_counters.frame_count % 20 == 0 {
-            if let Some(window) = self.window.as_mut() {
-                let title = format!(
-                    "Math2Model - CPU {:.2}ms GPU {:.2}ms",
-                    time_stats.avg_delta_time * 1000.0,
-                    time_stats.avg_gpu_time * 1000.0
-                );
-                window.set_title(&title);
-            }
-        }
-
-        *self.time_stats.lock().unwrap() = time_stats;
-
+        self.gui.time_stats = self.time_counters.stats();
         self.app.update(&input);
-        match self
-            .surface
-            .as_mut()
-            .map(|s| self.renderer.render(s, &self.app))
-        {
-            None => (),
-            Some(Ok(Some(render_results))) => {
-                self.time_counters
-                    .push_frame(render_results.delta_time, render_results.profiler_results);
-            }
-            Some(Ok(None)) => {
-                // Skipped a frame
-            }
-            Some(Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated)) => {
-                info!("Lost or outdated surface");
-                // Nothing to do, surface will be recreated
-            }
-            Some(Err(wgpu::SurfaceError::OutOfMemory)) => {
-                error!("Out of memory");
-                self.on_exit();
-                return event_loop.exit();
-            }
-            Some(Err(e)) => {
-                warn!("Unexpected error: {:?}", e);
+
+        if let Some(surface) = self.surface.as_mut() {
+            let raw_input = egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    Default::default(),
+                    egui::Vec2::new(surface.size().x as f32, surface.size().y as f32),
+                )),
+                ..Default::default()
+            };
+
+            let gui_render = self.gui.update(raw_input);
+
+            match self.renderer.render(surface, &self.app, gui_render) {
+                Ok(Some(render_results)) => {
+                    self.time_counters
+                        .push_frame(render_results.delta_time, render_results.profiler_results);
+                }
+                Ok(None) => {
+                    // Skipped a frame
+                }
+                Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
+                    info!("Lost or outdated surface");
+                    // Nothing to do, surface will be recreated
+                }
+                Err(wgpu::SurfaceError::OutOfMemory) => {
+                    error!("Out of memory");
+                    self.on_exit();
+                    return event_loop.exit();
+                }
+                Err(e) => {
+                    warn!("Unexpected error: {:?}", e);
+                }
             }
         }
     }
