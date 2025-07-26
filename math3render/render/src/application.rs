@@ -222,10 +222,22 @@ impl InputHandler for Application {
 
         if let Some(surface) = self.surface.as_mut() {
             let raw_input = egui::RawInput {
+                viewport_id: egui::ViewportId::ROOT,
+                viewports: egui::ViewportIdMap::from_iter([(
+                    egui::ViewportId::ROOT,
+                    egui::ViewportInfo {
+                        native_pixels_per_point: self
+                            .window
+                            .as_ref()
+                            .map(|w| w.scale_factor() as f32),
+                        ..Default::default()
+                    },
+                )]),
                 screen_rect: Some(egui::Rect::from_min_size(
                     Default::default(),
                     egui::Vec2::new(surface.size().x as f32, surface.size().y as f32),
                 )),
+
                 ..Default::default()
             };
 

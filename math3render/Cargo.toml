@@ -6,7 +6,6 @@ members = ["desktop", "render", "wasm"]
 bytemuck = { version = "1.23.1", features = ["derive"] }
 encase = { version = "0.11.1", features = ["glam"] }
 glam = { version = "0.30.4", features = ["bytemuck"] }
-indexmap = "2.10.0"
 log = "0.4.27"
 nanoserde = { version = "0.2.1", default-features = false, features = [
   "json",

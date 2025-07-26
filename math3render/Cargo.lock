@@ -2015,7 +2015,6 @@ dependencies = [
  "futures",
  "futures-channel",
  "glam",
- "indexmap",
  "log",
  "nanoserde",
  "notify-debouncer-full",
@@ -2140,17 +2139,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f0e2c6ed6606019b4e29e69dbaba95b11854410e5347d525002456dbbb786b6"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-wasm-bindgen"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8302e169f0eddcc139c70f139d19d6467353af16f9fce27e8c30158036a1e16b"
-dependencies = [
- "js-sys",
- "serde",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -2474,23 +2462,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9d12581f227e93f094d3af2ae690a574abb8a2b9b7a96e7cfe9647b2b617678"
 
 [[package]]
-name = "tsify-next"
-version = "0.5.6"
+name = "tsify"
+version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d0f2208feeb5f7a6edb15a2389c14cd42480ef6417318316bb866da5806a61d"
+checksum = "b2ec91b85e6c6592ed28636cb1dd1fac377ecbbeb170ff1d79f97aac5e38926d"
 dependencies = [
  "gloo-utils",
  "serde",
  "serde_json",
- "tsify-next-macros",
+ "tsify-macros",
  "wasm-bindgen",
 ]
 
 [[package]]
-name = "tsify-next-macros"
-version = "0.5.6"
+name = "tsify-macros"
+version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f81253930d0d388a3ab8fa4ae56da9973ab171ef833d1be2e9080fc3ce502bd6"
+checksum = "9a324606929ad11628a19206d7853807481dcaecd6c08be70a235930b8241955"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2765,8 +2753,7 @@ dependencies = [
  "log",
  "render",
  "serde",
- "serde-wasm-bindgen",
- "tsify-next",
+ "tsify",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",

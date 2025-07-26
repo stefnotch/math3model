@@ -11,6 +11,7 @@ use render::{
     scene::{Model, ShaderId, ShaderInfo, TextureData, TextureId, TextureInfo},
 };
 use std::sync::Arc;
+use tsify::JsValueSerdeExt;
 use wasm_bindgen::{JsError, JsValue, prelude::wasm_bindgen};
 use web_sys::{HtmlCanvasElement, ImageBitmap};
 use winit::event_loop::{EventLoop, EventLoopProxy};
@@ -156,7 +157,7 @@ impl WasmApplication {
                     match on_shader_compiled.call2(
                         &this,
                         &JsValue::from_str(&shader_id.0),
-                        &serde_wasm_bindgen::to_value(&messages).unwrap(),
+                        &JsValue::from_serde(&messages).unwrap(),
                     ) {
                         Ok(_) => (),
                         Err(e) => error!("Error calling on_shader_compiled: {:?}", e),

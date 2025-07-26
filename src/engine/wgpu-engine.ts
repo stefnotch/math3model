@@ -7,6 +7,8 @@ import init, {
 
 await init();
 
+// TODO: HMR (after cleaning up the JS side)
+
 /** Wraps the Rust engine in fire-and-forget functions. They will always be executed in-order */
 export class WgpuEngine {
   private taskQueue: Promise<void> = Promise.resolve();
