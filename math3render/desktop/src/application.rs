@@ -3,7 +3,6 @@ use glam::{Vec2, Vec3};
 use render::{
     application::{AppCommand, Application, WasmCanvas},
     camera::camera_controller::{self, CameraController, IsCameraController},
-    input::WinitAppHelper,
     scene::{MaterialInfo, Model, ShaderId, ShaderInfo},
     transform::Transform,
 };
@@ -92,6 +91,6 @@ pub fn run() -> anyhow::Result<()> {
         );
     }
 
-    event_loop.run_app(&mut WinitAppHelper::new(application))?;
+    event_loop.run_app(&mut application)?;
     Ok(())
 }

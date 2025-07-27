@@ -1,16 +1,32 @@
+// Heavily based on https://github.com/rukai/winit_input_helper/
+// But with a lot of modifications
+pub use cursor_capture::{CursorCaptureRequest, WindowCursorCapture};
 use std::collections::HashSet;
-
 use winit::{
-    dpi::{PhysicalPosition, PhysicalSize},
+    dpi::PhysicalPosition,
     event::{ElementState, KeyEvent, MouseButton, MouseScrollDelta},
     keyboard::{Key, KeyCode, NativeKeyCode, PhysicalKey},
 };
 
+mod cursor_capture;
+
+#[derive(Default)]
+pub struct WindowInputCollector {
+    start_cursor_position: PhysicalPosition<f64>,
+    end_cursor_position: PhysicalPosition<f64>,
+    mouse_motion: (f64, f64),
+    scroll_delta: PhysicalPosition<f64>,
+    mouse_inputs: Vec<MouseInput>,
+    mouse_held: HashSet<MouseButton>,
+    key_inputs: Vec<KeyEvent>,
+    physical_key_held: HashSet<PhysicalKey>,
+    key_held: HashSet<Key>,
+    pub cursor_capture: WindowCursorCapture,
+}
+
 pub struct WindowInputs<'a> {
     pub mouse: WindowMouseInputs<'a>,
     pub keyboard: WindowKeyboardInputs<'a>,
-    pub new_size: Option<PhysicalSize<u32>>,
-    pub new_scale_factor: Option<f64>,
 }
 
 pub struct WindowMouseInputs<'a> {
@@ -111,23 +127,6 @@ impl<'a> WindowKeyboardInputs<'a> {
     }
 }
 
-pub struct WindowInputCollector {
-    start_cursor_position: PhysicalPosition<f64>,
-    end_cursor_position: PhysicalPosition<f64>,
-    mouse_motion: (f64, f64),
-    scroll_delta: PhysicalPosition<f64>,
-    mouse_inputs: Vec<MouseInput>,
-    mouse_held: HashSet<MouseButton>,
-    key_inputs: Vec<KeyEvent>,
-    physical_key_held: HashSet<PhysicalKey>,
-    key_held: HashSet<Key>,
-    new_size: Option<PhysicalSize<u32>>,
-    new_scale_factor: Option<f64>,
-    // Not supported at the moment
-    // - dropped_file
-    // - step_start and step_duration
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct MouseInput {
     state: ElementState,
@@ -135,22 +134,6 @@ pub struct MouseInput {
 }
 
 impl WindowInputCollector {
-    pub fn new() -> Self {
-        Self {
-            start_cursor_position: Default::default(),
-            end_cursor_position: Default::default(),
-            mouse_motion: (0.0, 0.0),
-            scroll_delta: Default::default(),
-            mouse_inputs: Vec::new(),
-            mouse_held: HashSet::new(),
-            key_inputs: Vec::new(),
-            physical_key_held: HashSet::new(),
-            key_held: HashSet::new(),
-            new_size: None,
-            new_scale_factor: None,
-        }
-    }
-
     pub fn handle_window_event(&mut self, event: &winit::event::WindowEvent) {
         match event {
             winit::event::WindowEvent::CursorMoved { position, .. } => {
@@ -197,12 +180,6 @@ impl WindowInputCollector {
                     }
                 }
             }
-            winit::event::WindowEvent::Resized(size) => {
-                self.new_size = Some(*size);
-            }
-            winit::event::WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
-                self.new_scale_factor = Some(*scale_factor);
-            }
             _ => {}
         }
     }
@@ -236,8 +213,6 @@ impl WindowInputCollector {
                 physical_held: &self.physical_key_held,
                 logical_held: &self.key_held,
             },
-            new_size: self.new_size,
-            new_scale_factor: self.new_scale_factor,
         };
 
         self.start_cursor_position = self.end_cursor_position;
@@ -245,8 +220,6 @@ impl WindowInputCollector {
         self.mouse_motion = (0.0, 0.0);
         self.mouse_inputs.clear();
         self.key_inputs.clear();
-        self.new_size = None;
-        self.new_scale_factor = None;
 
         inputs
     }

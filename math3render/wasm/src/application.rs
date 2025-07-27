@@ -7,7 +7,6 @@ use render::{
         camera_controller::{self, CameraController, IsCameraController},
         orbitcam_controller::LogarithmicDistance,
     },
-    input::WinitAppHelper,
     scene::{Model, ShaderId, ShaderInfo, TextureData, TextureId, TextureInfo},
 };
 use std::sync::Arc;
@@ -59,11 +58,11 @@ impl WasmApplication {
         #[cfg(target_arch = "wasm32")]
         {
             use winit::platform::web::EventLoopExtWebSys;
-            event_loop.spawn_app(WinitAppHelper::new(application));
+            event_loop.spawn_app(application);
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            event_loop.run_app(&mut WinitAppHelper::new(application))?;
+            event_loop.run_app(&mut application)?;
         }
         Ok(())
     }

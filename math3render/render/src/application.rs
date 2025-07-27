@@ -12,7 +12,7 @@ use crate::input::KeyboardInputHelpers;
 use crate::{
     game::GameRes,
     gui::Gui,
-    input::{InputHandler, WindowInputs},
+    input::WindowInputCollector,
     renderer::GpuApplication,
     scene::ShaderId,
     time::TimeCounters,
@@ -42,6 +42,7 @@ pub struct Application {
     pub renderer: GpuApplication,
     pub surface: Option<WgpuSurface>,
     time_counters: TimeCounters,
+    input: WindowInputCollector,
     _app_commands: EventLoopProxy<AppCommand>,
     on_exit_callback: Option<Box<dyn FnOnce(&mut Application)>>,
     pub on_shader_compiled: Option<ShaderCompiledCallback>,
@@ -64,6 +65,7 @@ impl Application {
             renderer: GpuApplication::new(context),
             surface: None,
             time_counters: TimeCounters::default(),
+            input: Default::default(),
             _app_commands: app_commands,
             on_exit_callback: Some(Box::new(on_exit)),
             on_shader_compiled: None,
@@ -156,6 +158,7 @@ impl ApplicationHandler<AppCommand> for Application {
         event: winit::event::WindowEvent,
     ) {
         use winit::keyboard::{Key, KeyCode, NamedKey};
+        self.input.handle_window_event(&event);
         match event {
             WindowEvent::Resized(PhysicalSize { width, height }) => {
                 if let Some(surface) = &mut self.surface {
@@ -168,6 +171,8 @@ impl ApplicationHandler<AppCommand> for Application {
                 event_loop.exit();
             }
             WindowEvent::RedrawRequested => {
+                self.update_cursor_capture();
+                self.render(event_loop);
                 if let Some(window) = &self.window {
                     window.request_redraw();
                 }
@@ -207,11 +212,20 @@ impl ApplicationHandler<AppCommand> for Application {
             _ => (),
         }
     }
+    fn device_event(
+        &mut self,
+        _event_loop: &winit::event_loop::ActiveEventLoop,
+        _device_id: winit::event::DeviceId,
+        event: winit::event::DeviceEvent,
+    ) {
+        self.input.handle_device_event(&event);
+    }
 }
 
-impl InputHandler for Application {
-    fn update(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, input: WindowInputs<'_>) {
+impl Application {
+    pub fn render(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
         self.gui.time_stats = self.time_counters.stats();
+        let input = self.input.step();
         self.app.update(&input);
 
         if let Some(surface) = self.surface.as_mut() {
@@ -258,6 +272,14 @@ impl InputHandler for Application {
                     warn!("Unexpected error: {:?}", e);
                 }
             }
+        }
+    }
+
+    fn update_cursor_capture(&mut self) {
+        if let Some(window) = &self.window {
+            self.input
+                .cursor_capture
+                .update(self.app.cursor_capture, &window);
         }
     }
 }

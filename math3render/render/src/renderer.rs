@@ -21,7 +21,6 @@ use wgpu_profiler::GpuProfiler;
 use crate::{
     game::GameRes,
     gui::GuiRender,
-    input::WindowCursorCapture,
     renderer::{parametric_model::ParametricModel, parametric_renderer::ParametricRenderer},
     scene::{Model, ShaderId, TextureId, TextureInfo},
     texture::Texture,
@@ -36,7 +35,6 @@ pub struct GpuApplication {
     /// Sets the threshold factor for the LOD algorithm
     threshold_factor: f32,
     frame_counter: FrameCounter,
-    cursor_capture: WindowCursorCapture,
     scene_data: SceneData,
     depth_texture: Texture,
     object_id_texture: Texture,
@@ -54,7 +52,6 @@ impl GpuApplication {
             threshold_factor: 1.0,
             force_wait: false,
             frame_counter: FrameCounter::new(),
-            cursor_capture: WindowCursorCapture::Free,
             depth_texture: Texture::create_depth_texture(
                 &context.device,
                 UVec2::ONE,
@@ -150,8 +147,6 @@ impl GpuApplication {
         game: &GameRes,
         gui_render: GuiRender<'_>,
     ) -> Result<Option<RenderResults>, wgpu::SurfaceError> {
-        self.update_cursor_capture(surface, game.cursor_capture);
-
         let profiling_enabled = game.profiler_settings.gpu;
         if self.profiler.settings().enable_timer_queries != profiling_enabled {
             self.profiler
@@ -193,19 +188,6 @@ impl GpuApplication {
 
     pub fn set_threshold_factor(&mut self, factor: f32) {
         self.threshold_factor = factor.clamp(0.0001, 100000.0);
-    }
-
-    fn update_cursor_capture(
-        &mut self,
-        surface: &mut WgpuSurface,
-        cursor_capture: WindowCursorCapture,
-    ) {
-        if let Some(window) = match surface {
-            WgpuSurface::Surface { window, .. } => Some(window.clone()),
-            WgpuSurface::Fallback { .. } => None,
-        } {
-            self.cursor_capture.update(cursor_capture, &window);
-        }
     }
 }
 

@@ -10,6 +10,12 @@ pub enum WindowCursorCapture {
     LockedAndHidden(winit::dpi::PhysicalPosition<f64>),
 }
 
+impl Default for WindowCursorCapture {
+    fn default() -> Self {
+        Self::Free
+    }
+}
+
 impl WindowCursorCapture {
     pub fn update(&mut self, request: WindowCursorCapture, window: &winit::window::Window) {
         *self = match (&self, request) {
