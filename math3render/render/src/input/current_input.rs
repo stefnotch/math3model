@@ -251,3 +251,55 @@ impl WindowInputCollector {
         inputs
     }
 }
+
+pub trait KeyboardInputHelpers {
+    fn pressed_logical(&self, key: Key) -> bool;
+    fn just_pressed_logical(&self, key: Key) -> bool;
+    fn just_released_logical(&self, key: Key) -> bool;
+    fn pressed_physical(&self, key: KeyCode) -> bool;
+    fn just_pressed_physical(&self, key: KeyCode) -> bool;
+    fn just_released_physical(&self, key: KeyCode) -> bool;
+    fn pressed_physical_unidentified(&self, key: NativeKeyCode) -> bool;
+    fn just_pressed_physical_unidentified(&self, key: NativeKeyCode) -> bool;
+    fn just_released_physical_unidentified(&self, key: NativeKeyCode) -> bool;
+}
+
+impl KeyboardInputHelpers for KeyEvent {
+    fn pressed_logical(&self, key: Key) -> bool {
+        self.logical_key == key && self.state.is_pressed()
+    }
+
+    fn just_pressed_logical(&self, key: Key) -> bool {
+        self.logical_key == key && self.state.is_pressed() && !self.repeat
+    }
+
+    fn just_released_logical(&self, key: Key) -> bool {
+        self.logical_key == key && !self.state.is_pressed()
+    }
+
+    fn pressed_physical(&self, key: KeyCode) -> bool {
+        self.physical_key == PhysicalKey::Code(key) && self.state.is_pressed()
+    }
+
+    fn just_pressed_physical(&self, key: KeyCode) -> bool {
+        self.physical_key == PhysicalKey::Code(key) && self.state.is_pressed() && !self.repeat
+    }
+
+    fn just_released_physical(&self, key: KeyCode) -> bool {
+        self.physical_key == PhysicalKey::Code(key) && !self.state.is_pressed()
+    }
+
+    fn pressed_physical_unidentified(&self, key: NativeKeyCode) -> bool {
+        self.physical_key == PhysicalKey::Unidentified(key) && self.state.is_pressed()
+    }
+
+    fn just_pressed_physical_unidentified(&self, key: NativeKeyCode) -> bool {
+        self.physical_key == PhysicalKey::Unidentified(key)
+            && self.state.is_pressed()
+            && !self.repeat
+    }
+
+    fn just_released_physical_unidentified(&self, key: NativeKeyCode) -> bool {
+        self.physical_key == PhysicalKey::Unidentified(key) && !self.state.is_pressed()
+    }
+}

@@ -197,6 +197,13 @@ impl WgpuSurface {
             )),
         }
     }
+
+    pub fn pre_present_notify(&self) {
+        match self {
+            WgpuSurface::Surface { window, .. } => window.pre_present_notify(),
+            WgpuSurface::Fallback { .. } => {}
+        }
+    }
 }
 
 fn create_fallback_texture(device: &wgpu::Device, size: UVec2) -> wgpu::Texture {
@@ -218,7 +225,8 @@ fn create_fallback_texture(device: &wgpu::Device, size: UVec2) -> wgpu::Texture 
 
 pub fn create_profiler(context: &WgpuContext) -> GpuProfiler {
     let gpu_profiler_settings = GpuProfilerSettings {
-        enable_timer_queries: true, // Enabled by default
+        enable_timer_queries: false, // Disabled by default
+        enable_debug_groups: false,
         ..GpuProfilerSettings::default()
     };
 

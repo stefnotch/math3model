@@ -9,6 +9,7 @@ use winit::{
 
 use super::current_input::{WindowInputCollector, WindowInputs};
 
+/// Handles per-window inputs
 pub struct WinitAppHelper<Application> {
     pub app: Application,
     windows: HashMap<WindowId, WindowInputCollector>,

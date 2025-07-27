@@ -7,6 +7,8 @@ use winit::{
     event_loop::EventLoopProxy, window::Window,
 };
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::input::KeyboardInputHelpers;
 use crate::{
     game::GameRes,
     gui::Gui,
@@ -153,8 +155,14 @@ impl ApplicationHandler<AppCommand> for Application {
         _window_id: winit::window::WindowId,
         event: winit::event::WindowEvent,
     ) {
+        use winit::keyboard::{Key, KeyCode, NamedKey};
         match event {
-            WindowEvent::Resized(_) => {}
+            WindowEvent::Resized(PhysicalSize { width, height }) => {
+                if let Some(surface) = &mut self.surface {
+                    // And this will be followed up with a rendering event
+                    self.renderer.resize(surface, UVec2::new(width, height));
+                }
+            }
             WindowEvent::CloseRequested => {
                 self.on_exit();
                 event_loop.exit();
@@ -164,6 +172,38 @@ impl ApplicationHandler<AppCommand> for Application {
                     window.request_redraw();
                 }
             }
+            WindowEvent::KeyboardInput { event, .. } => {
+                #[cfg(not(target_arch = "wasm32"))]
+                if event.just_released_logical(Key::Named(NamedKey::Escape)) {
+                    self.on_exit();
+                    return event_loop.exit();
+                }
+                // Press P to print profiling data
+                #[cfg(not(target_arch = "wasm32"))]
+                if event.just_pressed_physical(KeyCode::KeyP) {
+                    match &self.time_counters.last_results {
+                        Some(data) => {
+                            let file_name = format!(
+                                "profile-{}.json",
+                                // use the current time as a unique-enugh identifier
+                                std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap()
+                                    .as_millis()
+                            );
+                            wgpu_profiler::chrometrace::write_chrometrace(
+                                std::path::Path::new(&file_name),
+                                data,
+                            )
+                            .unwrap();
+                            info!("Profiling data written to {file_name}");
+                        }
+                        None => {
+                            warn!("Profiling data not available");
+                        }
+                    }
+                }
+            }
             _ => (),
         }
     }
@@ -171,52 +211,6 @@ impl ApplicationHandler<AppCommand> for Application {
 
 impl InputHandler for Application {
     fn update(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, input: WindowInputs<'_>) {
-        #[cfg(not(target_arch = "wasm32"))]
-        if input
-            .keyboard
-            .just_released_logical(winit::keyboard::Key::Named(
-                winit::keyboard::NamedKey::Escape,
-            ))
-        {
-            self.on_exit();
-            return event_loop.exit();
-        }
-
-        // Press P to print profiling data
-        #[cfg(not(target_arch = "wasm32"))]
-        if input
-            .keyboard
-            .just_pressed_physical(winit::keyboard::KeyCode::KeyP)
-        {
-            match &self.time_counters.last_results {
-                Some(data) => {
-                    let file_name = format!(
-                        "profile-{}.json",
-                        // use the current time as a unique-enugh identifier
-                        std::time::SystemTime::now()
-                            .duration_since(std::time::UNIX_EPOCH)
-                            .unwrap()
-                            .as_millis()
-                    );
-                    wgpu_profiler::chrometrace::write_chrometrace(
-                        std::path::Path::new(&file_name),
-                        data,
-                    )
-                    .unwrap();
-                    info!("Profiling data written to {file_name}");
-                }
-                None => {
-                    warn!("Profiling data not available");
-                }
-            }
-        }
-
-        if let Some(PhysicalSize { width, height }) = input.new_size {
-            if let Some(surface) = &mut self.surface {
-                self.renderer.resize(surface, UVec2::new(width, height));
-            }
-        }
-
         self.gui.time_stats = self.time_counters.stats();
         self.app.update(&input);
 

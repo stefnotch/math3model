@@ -4,6 +4,8 @@ mod current_input;
 mod cursor_capture;
 mod winit_helper;
 
-pub use current_input::{MouseInput, WindowInputs, WindowKeyboardInputs, WindowMouseInputs};
+pub use current_input::{
+    KeyboardInputHelpers, MouseInput, WindowInputs, WindowKeyboardInputs, WindowMouseInputs,
+};
 pub use cursor_capture::{CursorCaptureRequest, WindowCursorCapture};
 pub use winit_helper::{InputHandler, WinitAppHelper};

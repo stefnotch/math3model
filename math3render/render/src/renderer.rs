@@ -32,7 +32,6 @@ use crate::{
 pub struct GpuApplication {
     pub context: Arc<WgpuContext>,
     profiler: GpuProfiler,
-    profiling_enabled: bool,
     force_wait: bool,
     /// Sets the threshold factor for the LOD algorithm
     threshold_factor: f32,
@@ -52,7 +51,6 @@ impl GpuApplication {
         let context = Arc::new(context);
         Self {
             profiler: create_profiler(&context),
-            profiling_enabled: false,
             threshold_factor: 1.0,
             force_wait: false,
             frame_counter: FrameCounter::new(),
@@ -154,11 +152,12 @@ impl GpuApplication {
     ) -> Result<Option<RenderResults>, wgpu::SurfaceError> {
         self.update_cursor_capture(surface, game.cursor_capture);
 
-        if self.profiling_enabled != game.profiler_settings.gpu {
-            self.profiling_enabled = game.profiler_settings.gpu;
+        let profiling_enabled = game.profiler_settings.gpu;
+        if self.profiler.settings().enable_timer_queries != profiling_enabled {
             self.profiler
                 .change_settings(wgpu_profiler::GpuProfilerSettings {
-                    enable_timer_queries: self.profiling_enabled,
+                    enable_timer_queries: profiling_enabled,
+                    enable_debug_groups: profiling_enabled,
                     ..Default::default()
                 })
                 .unwrap();
@@ -331,6 +330,8 @@ impl GpuApplication {
             .queue
             .submit(std::iter::once(command_encoder.finish()));
 
+        surface.pre_present_notify();
+
         if self.force_wait {
             context.instance.poll_all(true);
         }
@@ -342,9 +343,12 @@ impl GpuApplication {
         self.profiler.end_frame().unwrap();
         let render_results = Some(RenderResults {
             delta_time: frame_time.delta,
-            profiler_results: self
-                .profiler
-                .process_finished_frame(context.queue.get_timestamp_period()),
+            profiler_results: if self.profiler.settings().enable_timer_queries {
+                self.profiler
+                    .process_finished_frame(context.queue.get_timestamp_period())
+            } else {
+                None
+            },
         });
 
         if self.force_wait {
