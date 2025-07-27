@@ -1,12 +1,3 @@
-use std::sync::Arc;
-
-use glam::UVec2;
-use log::{error, info, warn};
-use winit::{
-    application::ApplicationHandler, dpi::PhysicalSize, event::WindowEvent,
-    event_loop::EventLoopProxy, window::Window,
-};
-
 #[cfg(not(target_arch = "wasm32"))]
 use crate::input::KeyboardInputHelpers;
 use crate::{
@@ -19,6 +10,14 @@ use crate::{
     wgpu_context::{WgpuContext, WgpuSurface},
     window_or_fallback::WindowOrFallback,
 };
+use glam::UVec2;
+use log::{error, info, warn};
+use std::sync::Arc;
+use winit::{
+    application::ApplicationHandler, dpi::PhysicalSize, event::WindowEvent,
+    event_loop::EventLoopProxy, window::Window,
+};
+
 pub struct WasmCanvas {
     #[cfg(target_arch = "wasm32")]
     pub canvas: web_sys::HtmlCanvasElement,

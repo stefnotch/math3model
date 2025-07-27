@@ -1,8 +1,6 @@
-use glam::{Quat, Vec3};
-
-use crate::input::{CursorCaptureRequest, WindowInputs};
-
 use super::{freecam_controller::FreecamController, orbitcam_controller::OrbitcamController};
+use crate::input::{CursorCaptureRequest, WindowInputs};
+use glam::{Quat, Vec3};
 
 pub trait IsCameraController {
     fn position(&self) -> Vec3;

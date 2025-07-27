@@ -126,7 +126,7 @@ impl<'a> WindowKeyboardInputs<'a> {
             .collect()
     }
 }
-
+//
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct MouseInput {
     state: ElementState,

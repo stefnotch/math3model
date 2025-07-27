@@ -1,13 +1,11 @@
-use glam::{Quat, Vec2, Vec3};
-use winit::{event::MouseButton, keyboard::KeyCode};
-
-use crate::input::{CursorCaptureRequest, WindowInputs};
-
 use super::{
     Camera,
     angle::Angle,
     camera_controller::{GeneralController, GeneralControllerSettings, IsCameraController},
 };
+use crate::input::{CursorCaptureRequest, WindowInputs};
+use glam::{Quat, Vec2, Vec3};
+use winit::{event::MouseButton, keyboard::KeyCode};
 
 pub struct FreecamController {
     pub position: Vec3,

@@ -1,7 +1,6 @@
-use std::sync::Arc;
-
 use glam::UVec2;
 use log::info;
+use std::sync::Arc;
 use wgpu_profiler::{GpuProfiler, GpuProfilerSettings};
 use winit::window::Window;
 

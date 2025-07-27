@@ -23,7 +23,7 @@ fn main() {
     let start_time = std::time::Instant::now();
 
     let mut shader_compiler = ShaderCompiler {
-        resolver: StandardResolver::new("shaders"),
+        resolver: StandardResolver::new("wgsl"),
         // Work around current wesl limitations
         compile_options: CompileOptions {
             strip: false,

@@ -1,9 +1,8 @@
-use wgpu::TextureView;
-
 use crate::{
     time::TimeStats,
     wgpu_context::{VIEW_FORMAT, WgpuContext, WgpuSurface},
 };
+use wgpu::TextureView;
 
 pub struct Gui {
     pub ctx: egui::Context,

@@ -1,0 +1,15 @@
+[package]
+name = "shaders"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+[dependencies]
+bytemuck = { workspace = true }
+encase = { workspace = true }
+glam = { workspace = true }
+wgpu = { workspace = true }
+
+[build-dependencies]
+wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs" }
+wgsl_to_wgpu = { version = "0.15.0" }

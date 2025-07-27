@@ -1,6 +1,5 @@
-use std::sync::Arc;
-
 use glam::UVec2;
+use std::sync::Arc;
 use winit::window::Window;
 
 pub enum WindowOrFallback {

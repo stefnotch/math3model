@@ -1,25 +1,28 @@
 [workspace]
 resolver = "3"
-members = ["desktop", "render", "wasm"]
+members = ["desktop", "render", "shaders", "wasm"]
 
 [workspace.dependencies]
 bytemuck = { version = "1.23.1", features = ["derive"] }
 encase = { version = "0.11.1", features = ["glam"] }
-glam = { version = "0.30.4", features = ["bytemuck"] }
+glam = { version = "0.30.5", features = ["bytemuck"] }
 log = "0.4.27"
 nanoserde = { version = "0.2.1", default-features = false, features = [
   "json",
   "std",
 ] }
 wgpu = { version = "26.0.1", default-features = false }
-winit = { version = "0.30.11" }
+winit = { version = "0.30.12" }
 
 [patch.crates-io]
 egui-wgpu = { branch = "wgpu-26", git = "https://github.com/torokati44/egui.git" }
 
 [patch."https://github.com/torokati44/egui"]
-egui = "*"
-epaint = "*"
+egui = "0.32.0"
+epaint = "0.32.0"
 
 [profile.release]
 debug = true
+
+[profile.dev.package."*"]
+debug = "line-tables-only"

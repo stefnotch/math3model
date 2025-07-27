@@ -1,18 +1,17 @@
-use std::{collections::HashMap, sync::Arc};
-
 use crate::{
     buffer::{DeviceBufferExt, TypedBuffer},
     mesh::Mesh,
     renderer::virtual_model::ShaderPipelines,
     scene::{ShaderId, TextureData, TextureId, TextureInfo},
-    shaders::{compute_patches, copy_patches, utils},
     texture::Texture,
     wgpu_context::WgpuContext,
 };
+use shaders::{compute_patches, copy_patches, utils};
+use std::{collections::HashMap, sync::Arc};
+
 pub const PATCH_SIZES: [u32; 5] = [2, 4, 8, 16, 32];
 pub const MAX_PATCH_COUNT: u32 = 524_288;
 
-const MISSING_SHADER: &str = include_str!("../../shaders/DefaultParametric.wgsl");
 pub struct ParametricRenderer {
     /// size/2 - 1 == one quad per four pixels
     pub quad_meshes: Vec<Mesh>,
@@ -35,7 +34,7 @@ impl ParametricRenderer {
                 .collect::<Vec<_>>(),
             missing_shader: Arc::new(ShaderPipelines::new(
                 "Missing Shader",
-                MISSING_SHADER,
+                shaders::DEFAULT_PARAMETRIC,
                 context,
             )),
             empty_texture: Texture::new_rgba(

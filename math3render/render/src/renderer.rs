@@ -7,14 +7,11 @@ mod skybox;
 mod virtual_model;
 
 pub use frame_data::FrameData;
-use ground_plane::GroundPlane;
-use skybox::Skybox;
-
-use std::sync::Arc;
-
 use glam::UVec2;
-
+use ground_plane::GroundPlane;
 use scene::SceneData;
+use skybox::Skybox;
+use std::sync::Arc;
 use virtual_model::ShaderPipelines;
 use wgpu_profiler::GpuProfiler;
 
@@ -27,7 +24,7 @@ use crate::{
     time::{FrameCounter, Seconds},
     wgpu_context::{WgpuContext, WgpuSurface, create_profiler},
 };
-
+//okay code gen slow
 pub struct GpuApplication {
     pub context: Arc<WgpuContext>,
     profiler: GpuProfiler,

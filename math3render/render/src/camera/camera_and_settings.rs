@@ -1,8 +1,7 @@
+use super::{angle::Angle, camera_controller::IsCameraController};
 use glam::{Mat4, Quat, UVec2, Vec3};
 
-use super::{angle::Angle, camera_controller::IsCameraController};
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CameraSettings {
     pub z_near: f32,
     pub z_far: f32,
@@ -19,7 +18,7 @@ impl Default for CameraSettings {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Camera {
     pub position: Vec3,
     pub orientation: Quat,

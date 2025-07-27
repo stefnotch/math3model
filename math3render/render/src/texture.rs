@@ -1,6 +1,5 @@
-use glam::UVec2;
-
 use crate::scene::TextureInfo;
+use glam::UVec2;
 
 #[derive(PartialEq, Clone)]
 pub struct Texture {

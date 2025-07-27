@@ -2,10 +2,10 @@ use crate::{
     buffer::DeviceBufferExt,
     mesh::Mesh,
     renderer::FrameData,
-    shaders::ground_plane,
     texture::Texture,
     wgpu_context::{VIEW_FORMAT, WgpuContext, WgpuSurface},
 };
+use shaders::ground_plane;
 
 pub struct GroundPlane {
     mesh: Mesh,

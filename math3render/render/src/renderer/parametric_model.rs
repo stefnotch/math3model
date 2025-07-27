@@ -1,9 +1,3 @@
-use std::sync::Arc;
-
-use encase::ShaderType;
-use glam::UVec2;
-use wgpu::Queue;
-
 use crate::{
     buffer::{CommandEncoderBufferExt, DeviceBufferExt, TypedBuffer},
     mesh::Mesh,
@@ -14,11 +8,15 @@ use crate::{
         virtual_model::ShaderPipelines,
     },
     scene::{MaterialInfo, Model},
-    shaders::{compute_patches, copy_patches, render_patches, utils},
     texture::Texture,
     transform::Transform,
     wgpu_context::WgpuContext,
 };
+use encase::ShaderType;
+use glam::UVec2;
+use shaders::{compute_patches, copy_patches, render_patches, utils};
+use std::sync::Arc;
+use wgpu::Queue;
 
 pub struct ParametricModel {
     model: TypedBuffer<render_patches::Model>,

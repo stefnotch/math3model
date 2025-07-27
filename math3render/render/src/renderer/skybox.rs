@@ -1,13 +1,12 @@
-use glam::Vec3;
-
 use crate::{
     buffer::{DeviceBufferExt, TypedBuffer},
     mesh::Mesh,
     renderer::FrameData,
-    shaders::skybox,
     texture::Texture,
     wgpu_context::{VIEW_FORMAT, WgpuContext, WgpuSurface},
 };
+use glam::Vec3;
+use shaders::skybox;
 
 pub struct Skybox {
     mesh: Mesh,

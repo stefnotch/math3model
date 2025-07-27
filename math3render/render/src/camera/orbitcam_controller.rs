@@ -1,13 +1,11 @@
-use glam::{Quat, Vec2, Vec3};
-use winit::event::MouseButton;
-
-use crate::input::{CursorCaptureRequest, WindowInputs};
-
 use super::{
     Camera,
     angle::Angle,
     camera_controller::{GeneralController, GeneralControllerSettings, IsCameraController},
 };
+use crate::input::{CursorCaptureRequest, WindowInputs};
+use glam::{Quat, Vec2, Vec3};
+use winit::event::MouseButton;
 
 pub struct LogarithmicDistance(f32);
 impl LogarithmicDistance {

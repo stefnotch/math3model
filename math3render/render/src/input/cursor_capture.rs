@@ -1,10 +1,10 @@
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum CursorCaptureRequest {
     Free,
     LockedAndHidden,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum WindowCursorCapture {
     Free,
     LockedAndHidden(winit::dpi::PhysicalPosition<f64>),

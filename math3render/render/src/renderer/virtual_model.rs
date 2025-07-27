@@ -1,12 +1,10 @@
-// This is the simplest design, where each virtual model has its own set of resources.
-
 use crate::{
     scene::MaterialInfo,
-    shaders::{compute_patches, render_patches},
     texture::Texture,
     wgpu_context::{VIEW_FORMAT, WgpuContext},
 };
 use glam::Vec4;
+use shaders::{compute_patches, render_patches};
 use wgpu::ShaderModule;
 
 pub struct ShaderPipelines {
