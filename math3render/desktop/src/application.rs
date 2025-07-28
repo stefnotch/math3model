@@ -1,6 +1,6 @@
 use crate::config::{CacheFile, CachedCamera, CachedChosenController};
-use futures::executor::block_on;
 use glam::{Vec2, Vec3};
+use pollster::block_on;
 use render::{
     application::{AppCommand, Application, WasmCanvas},
     camera::camera_controller::{self, CameraController, IsCameraController},
