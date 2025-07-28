@@ -64,7 +64,7 @@ impl ParametricModel {
                 .material_info
                 .diffuse_texture
                 .as_ref()
-                .and_then(|id| renderer.textures.get(&id).cloned())
+                .and_then(|id| renderer.textures.get(id).cloned())
                 .unwrap_or_else(|| renderer.empty_texture.clone()),
             shader: renderer
                 .shaders
@@ -218,7 +218,7 @@ impl ParametricModel {
         }
         {
             let mut compute_pass = commands.scoped_compute_pass("Copy Patch Sizes Pass");
-            compute_pass.set_pipeline(&copy_patches_pipeline);
+            compute_pass.set_pipeline(copy_patches_pipeline);
             copy_patches::set_bind_groups(
                 &mut compute_pass.recorder,
                 &self.render.copy_patches_bind_group_0,
@@ -271,7 +271,7 @@ impl ParametricModel {
 impl ParametricModelLod {
     pub fn new(context: &WgpuContext) -> Self {
         let input_buffer = context.device.uniform_buffer(
-            &format!("Compute Patches Input Buffer"),
+            "Compute Patches Input Buffer",
             &compute_patches::InputBuffer {
                 model_view_projection: glam::Mat4::IDENTITY,
                 threshold_factor: 1.0,
@@ -285,20 +285,20 @@ impl ParametricModelLod {
         };
 
         let force_render_uniform = context.device.uniform_buffer(
-            &format!("Force Render Uniform"),
+            "Force Render Uniform",
             &compute_patches::ForceRenderFlag { flag: 0 },
             wgpu::BufferUsages::COPY_DST,
         );
 
         let patches_buffer = [
             context.device.storage_buffer_with_array(
-                &format!("Patches Buffer 0"),
+                "Patches Buffer 0",
                 &patches_buffer_empty,
                 MAX_PATCH_COUNT as u64,
                 wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST,
             ),
             context.device.storage_buffer_with_array(
-                &format!("Patches Buffer 1"),
+                "Patches Buffer 1",
                 &patches_buffer_empty,
                 MAX_PATCH_COUNT as u64,
                 wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST,
@@ -307,13 +307,13 @@ impl ParametricModelLod {
 
         let indirect_compute_buffer = [
             context.device.storage_buffer(
-                &format!("Indirect Compute Dispatch Buffer 0"),
+                "Indirect Compute Dispatch Buffer 0",
                 // None of these values will ever be read
                 &utils::DispatchIndirectArgs { x: 0, y: 0, z: 0 },
                 wgpu::BufferUsages::INDIRECT | wgpu::BufferUsages::COPY_DST,
             ),
             context.device.storage_buffer(
-                &format!("Indirect Compute Dispatch Buffer 1"),
+                "Indirect Compute Dispatch Buffer 1",
                 &utils::DispatchIndirectArgs { x: 0, y: 0, z: 0 },
                 wgpu::BufferUsages::INDIRECT | wgpu::BufferUsages::COPY_DST,
             ),
@@ -378,7 +378,7 @@ impl ParametricModelRender {
         };
 
         let indirect_draw = context.device.storage_buffer(
-            &format!("Indirect Draw Buffers"),
+            "Indirect Draw Buffers",
             &meshes
                 .iter()
                 .map(|mesh| copy_patches::DrawIndexedIndirectArgs {

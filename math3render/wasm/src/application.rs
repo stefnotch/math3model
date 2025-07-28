@@ -98,7 +98,9 @@ impl WasmApplication {
                 match shader_result.await {
                     Ok(()) => {}
                     Err(err) => {
-                        on_shader_compiled.map(|v| (v.0)(&shader_id, err));
+                        if let Some(v) = on_shader_compiled {
+                            (v.0)(&shader_id, err)
+                        }
                     }
                 }
             });
@@ -151,7 +153,7 @@ impl WasmApplication {
                     let this = wasm_bindgen::JsValue::NULL;
                     let messages = messages
                         .into_iter()
-                        .map(|message| WasmCompilationMessage::from(message))
+                        .map(WasmCompilationMessage::from)
                         .collect::<Vec<_>>();
                     match on_shader_compiled.call2(
                         &this,
@@ -159,7 +161,7 @@ impl WasmApplication {
                         &JsValue::from_serde(&messages).unwrap(),
                     ) {
                         Ok(_) => (),
-                        Err(e) => error!("Error calling on_shader_compiled: {:?}", e),
+                        Err(e) => error!("Error calling on_shader_compiled: {e:?}"),
                     }
                 },
             ))

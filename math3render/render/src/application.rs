@@ -265,10 +265,10 @@ impl Application {
                 Err(wgpu::SurfaceError::OutOfMemory) => {
                     error!("Out of memory");
                     self.on_exit();
-                    return event_loop.exit();
+                    event_loop.exit()
                 }
                 Err(e) => {
-                    warn!("Unexpected error: {:?}", e);
+                    warn!("Unexpected error: {e:?}");
                 }
             }
         }
@@ -278,7 +278,7 @@ impl Application {
         if let Some(window) = &self.window {
             self.input
                 .cursor_capture
-                .update(self.app.cursor_capture, &window);
+                .update(self.app.cursor_capture, window);
         }
     }
 }

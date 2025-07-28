@@ -48,11 +48,10 @@ impl TimeCounters {
 fn get_time_range(
     gpu_time_results: &[wgpu_profiler::GpuTimerQueryResult],
 ) -> Option<std::ops::Range<f64>> {
-    let time_range = gpu_time_results
+    gpu_time_results
         .iter()
         .filter_map(|v| v.time.clone().or_else(|| get_time_range(&v.nested_queries)))
-        .reduce(|a, b| a.start.min(b.start)..a.end.max(b.end));
-    time_range
+        .reduce(|a, b| a.start.min(b.start)..a.end.max(b.end))
 }
 
 fn avg_seconds(data: &[Seconds]) -> f32 {

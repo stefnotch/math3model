@@ -53,7 +53,7 @@ fn main() {
     shader_compiler.compile("render_patches");
 
     std::fs::write(
-        &shader_compiler.out_dir.join("shaders.rs"),
+        shader_compiler.out_dir.join("shaders.rs"),
         shader_compiler
             .out_module
             .to_generated_bindings(shader_compiler.write_options),
@@ -81,11 +81,11 @@ impl<'a> ShaderCompiler<'a> {
         let compiled = compile_sourcemap(
             &entry_point,
             &self.resolver,
-            &EscapeMangler::default(),
+            &EscapeMangler,
             &self.compile_options,
         )
         .inspect_err(|e| {
-            eprintln!("failed to build WESL shader. {}\n{e}", entry_point);
+            eprintln!("failed to build WESL shader. {entry_point}\n{e}");
         })
         .unwrap();
         emit_rerun_if_changed(&compiled.modules, &self.resolver);
@@ -101,12 +101,12 @@ impl<'a> ShaderCompiler<'a> {
                 wesl_unmangler,
             )
             .inspect_err(|e| {
-                eprintln!("failed to build WESL shader. {}\n{e}", entry_point);
+                eprintln!("failed to build WESL shader. {entry_point}\n{e}");
             })
             .unwrap();
 
         std::fs::write(
-            &self.out_dir.join(format!("{shader_name}.wgsl")),
+            self.out_dir.join(format!("{shader_name}.wgsl")),
             &compiled_code,
         )
         .unwrap();
@@ -137,7 +137,7 @@ impl std::fmt::Display for RustStrLiteral<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut max_hash_count = 0;
         let mut chars = self.0.chars();
-        while chars.find(|c| *c == '#').is_some() {
+        while chars.any(|c| c == '#') {
             let count = 1 + chars.by_ref().take_while(|c| *c == '#').count();
             max_hash_count = max_hash_count.max(count);
         }

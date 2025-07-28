@@ -24,7 +24,7 @@ impl Gui {
             egui::TopBottomPanel::bottom("bottom_panel")
                 .frame(egui::Frame::NONE)
                 .show_separator_line(false)
-                .show(&ctx, |ui| {
+                .show(ctx, |ui| {
                     ui.label(format!(
                         "CPU {:.2}ms GPU {:.2}ms",
                         self.time_stats.avg_delta_time * 1000.0,

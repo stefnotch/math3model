@@ -61,7 +61,7 @@ impl OrbitcamController {
             cursor_capture = CursorCaptureRequest::LockedAndHidden;
         }
 
-        self.logarithmic_distance.0 += -1.0 * (input.mouse.scroll_delta.y as f32) * 0.01;
+        self.logarithmic_distance.0 += -(input.mouse.scroll_delta.y as f32) * 0.01;
 
         cursor_capture
     }

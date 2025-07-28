@@ -143,7 +143,7 @@ pub trait CommandEncoderBufferExt<T> {
 }
 impl<T> CommandEncoderBufferExt<T> for wgpu::CommandEncoder {
     fn copy_tbuffer_to_tbuffer(&mut self, buffer: &TypedBuffer<T>, other: &TypedBuffer<T>) {
-        self.copy_buffer_to_buffer(&buffer, 0, &other, 0, buffer.size());
+        self.copy_buffer_to_buffer(buffer, 0, other, 0, buffer.size());
     }
 }
 
@@ -202,10 +202,10 @@ where
     fn clone(&self) -> Self {
         Self {
             buffer: self.buffer.clone(),
-            offset: self.offset.clone(),
-            size: self.size.clone(),
+            offset: self.offset,
+            size: self.size,
             variant: self.variant,
-            _phantom: self._phantom.clone(),
+            _phantom: self._phantom,
         }
     }
 }

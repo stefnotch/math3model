@@ -48,7 +48,7 @@ impl GpuApplication {
             profiler: create_profiler(&context),
             threshold_factor: 1.0,
             force_wait: false,
-            frame_counter: FrameCounter::new(),
+            frame_counter: Default::default(),
             depth_texture: Texture::create_depth_texture(
                 &context.device,
                 UVec2::ONE,
@@ -203,7 +203,7 @@ impl GpuApplication {
             Ok(v) => v,
             err @ Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
                 // Roughly based on https://github.com/gfx-rs/wgpu/blob/a0c185a28c232ee2ab63f72d6fd3a63a3f787309/examples/src/framework.rs#L216
-                surface.recreate_swapchain(&context);
+                surface.recreate_swapchain(context);
                 return err.map(|_| None);
             }
             err => {
@@ -212,7 +212,7 @@ impl GpuApplication {
         };
 
         self.scene_data
-            .update(surface.size(), &render_data, &frame_time, &context.queue);
+            .update(surface.size(), render_data, &frame_time, &context.queue);
 
         for (model_info, parametric_model) in self.models.iter() {
             parametric_model.update(
@@ -300,8 +300,8 @@ impl GpuApplication {
             gui_render.render(
                 context,
                 surface,
-                &surface_texture.texture_view(),
-                &mut commands.recorder,
+                surface_texture.texture_view(),
+                commands.recorder,
             );
         };
         self.profiler.resolve_queries(&mut command_encoder);

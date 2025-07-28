@@ -185,12 +185,9 @@ impl WindowInputCollector {
     }
 
     pub fn handle_device_event(&mut self, event: &winit::event::DeviceEvent) {
-        match event {
-            winit::event::DeviceEvent::MouseMotion { delta } => {
-                self.mouse_motion.0 += delta.0;
-                self.mouse_motion.1 += delta.1;
-            }
-            _ => {}
+        if let winit::event::DeviceEvent::MouseMotion { delta } = event {
+            self.mouse_motion.0 += delta.0;
+            self.mouse_motion.1 += delta.1;
         }
     }
 

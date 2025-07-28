@@ -10,7 +10,7 @@ use render::{
 use shaders::HEART_SPHERE;
 use winit::event_loop::EventLoop;
 
-const CACHE_FILE: &'static str = "cache.json";
+const CACHE_FILE: &str = "cache.json";
 
 fn save_cache(mut cache_file: CacheFile) -> impl FnOnce(&mut Application) {
     move |app: &mut Application| {

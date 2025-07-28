@@ -62,8 +62,8 @@ pub enum SurfaceTexture {
 impl SurfaceTexture {
     pub fn texture_view(&self) -> &wgpu::TextureView {
         match self {
-            SurfaceTexture::Surface(_, view, _) => &view,
-            SurfaceTexture::Fallback(view) => &view,
+            SurfaceTexture::Surface(_, view, _) => view,
+            SurfaceTexture::Fallback(view) => view,
         }
     }
 
@@ -229,7 +229,5 @@ pub fn create_profiler(context: &WgpuContext) -> GpuProfiler {
         ..GpuProfilerSettings::default()
     };
 
-    let profiler = GpuProfiler::new(&context.device, gpu_profiler_settings)
-        .expect("Failed to create profiler");
-    profiler
+    GpuProfiler::new(&context.device, gpu_profiler_settings).expect("Failed to create profiler")
 }

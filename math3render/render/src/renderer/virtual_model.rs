@@ -53,12 +53,12 @@ fn create_render_pipeline(
 ) -> (wgpu::RenderPipeline, ShaderModule) {
     let device = &context.device;
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: Some(&format!("Render Shader {}", label)),
+        label: Some(&format!("Render Shader {label}")),
         source: wgpu::ShaderSource::Wgsl(replace_render_code(render_patches::SOURCE, code).into()),
     });
     (
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some(&format!("Render Pipeline {}", label)),
+            label: Some(&format!("Render Pipeline {label}")),
             layout: Some(&render_patches::create_pipeline_layout(device)),
             vertex: render_patches::vertex_state(
                 &shader,
@@ -120,7 +120,7 @@ pub fn create_compute_patches_pipeline(
     });
     (
         device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: Some(&format!("Compute Patches {}", label)),
+            label: Some(&format!("Compute Patches {label}")),
             layout: Some(&compute_patches::create_pipeline_layout(device)),
             module: &shader,
             entry_point: Some(compute_patches::ENTRY_COMPUTE_PATCHES_MAIN),
@@ -131,7 +131,7 @@ pub fn create_compute_patches_pipeline(
     )
 }
 
-fn replace_render_code<'a>(source: &'a str, sample_object_code: &str) -> String {
+fn replace_render_code(source: &str, sample_object_code: &str) -> String {
     // LATER use wesl-rs instead of this
     let range_1 = fn_range("fn package__1render_patches_sampleObject", source);
     let range_2 = fn_range("fn package__1render_patches_getColor", source);
@@ -152,7 +152,7 @@ fn replace_render_code<'a>(source: &'a str, sample_object_code: &str) -> String 
     result
 }
 
-fn replace_compute_code<'a>(source: &'a str, sample_object_code: &str) -> String {
+fn replace_compute_code(source: &str, sample_object_code: &str) -> String {
     // LATER use wesl-rs instead of this
     let range_1 = fn_range("fn package__1compute_patches_sampleObject", source);
 

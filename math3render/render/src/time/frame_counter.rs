@@ -9,20 +9,13 @@ pub struct FrameTime {
     pub elapsed: Seconds,
 }
 
+#[derive(Default)]
 pub struct FrameCounter {
     pub frame: u64,
     pub first_render_instant: Option<Instant>,
     pub render_instant: Option<Instant>,
 }
 impl FrameCounter {
-    pub fn new() -> Self {
-        Self {
-            frame: 0,
-            first_render_instant: None,
-            render_instant: None,
-        }
-    }
-
     pub fn new_frame(&mut self) -> FrameTime {
         let frame = self.frame;
         let now = Instant::now();
