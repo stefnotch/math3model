@@ -11,7 +11,7 @@ nanoserde = { version = "0.2.1", default-features = false, features = [
   "json",
   "std",
 ] }
-wgpu = { version = "26.0.1", default-features = false }
+wgpu = { version = "26.0.1", default-features = false, features = ["wgsl"] }
 winit = { version = "0.30.12" }
 
 [patch.crates-io]
@@ -24,5 +24,5 @@ epaint = "0.32.0"
 [profile.release]
 debug = true
 
-[profile.dev.package."*"]
+[profile.dev]
 debug = "line-tables-only"
