@@ -207,6 +207,7 @@ impl ApplicationHandler<AppCommand> for Application {
                         }
                     }
                 }
+                _ = event;
             }
             _ => (),
         }
