@@ -20,7 +20,7 @@ import {
   SceneFileName,
   serializeScene,
 } from "@/filesystem/scene-file.ts";
-import type { WgpuEngine } from "@/engine/wgpu-engine.ts";
+import { type WgpuEngine } from "@/engine/wgpu-engine.ts";
 import type { ObjectUpdate } from "./input/object-update.ts";
 import type { WasmModelInfo } from "math3render/pkg/web";
 import { useErrorStore } from "@/stores/error-store.ts";
@@ -34,7 +34,6 @@ import { useFsStore } from "@/stores/fs-store.ts";
 // Unchanging props! No need to watch them.
 const props = defineProps<{
   fs: ReactiveFilesystem;
-  canvas: HTMLCanvasElement;
   engine: WgpuEngine;
 }>();
 
@@ -96,7 +95,7 @@ const canvasContainer = ref<HTMLDivElement | null>(null);
 
 // Attach the canvas to the DOM
 watchEffect(() => {
-  canvasContainer.value?.appendChild(props.canvas);
+  canvasContainer.value?.appendChild(props.engine.canvas);
 });
 
 watchEffect(() => {

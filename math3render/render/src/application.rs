@@ -94,27 +94,16 @@ pub enum AppCommand {
     RunCallback(Box<dyn FnOnce(&mut Application)>),
 }
 
-/// Run a function on the main thread and awaits its result.
+/// Run a function on the main thread.
 /// Not a part of the Application, because we want to be able to call this without the lifetime constraint of the Application.
-#[must_use]
-pub async fn run_on_main<Callback, T>(
-    app_commands: EventLoopProxy<AppCommand>,
-    callback: Callback,
-) -> T
+pub fn run_on_main<Callback>(app_commands: EventLoopProxy<AppCommand>, callback: Callback)
 where
-    Callback: (FnOnce(&mut Application) -> T) + 'static,
-    T: Send + 'static,
+    Callback: (FnOnce(&mut Application) -> ()) + 'static,
 {
-    let (sender, receiver) = futures_channel::oneshot::channel();
-    let callback = move |app: &mut Application| {
-        let return_value = callback(app);
-        _ = sender.send(return_value);
-    };
     app_commands
         .send_event(AppCommand::RunCallback(Box::new(callback)))
         .map_err(|_| ())
-        .expect("Failed to send event, event loop not running?");
-    receiver.await.expect("Was the main thread stopped?")
+        .expect("Failed to send event, event loop not running?")
 }
 
 impl ApplicationHandler<AppCommand> for Application {

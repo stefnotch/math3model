@@ -67,7 +67,7 @@ impl WasmApplication {
         Ok(())
     }
 
-    pub async fn update_models(&self, js_models: Vec<WasmModelInfo>) {
+    pub fn update_models(&self, js_models: Vec<WasmModelInfo>) {
         let models = js_models
             .into_iter()
             .map(|v| Model {
@@ -78,20 +78,19 @@ impl WasmApplication {
                 instance_count: v.instance_count,
             })
             .collect::<Vec<_>>();
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
             app.renderer.update_models(&models);
-        })
-        .await;
+        });
     }
 
-    pub async fn update_shader(&self, shader_info: WasmShaderInfo) {
+    pub fn update_shader(&self, shader_info: WasmShaderInfo) {
         let shader_id = ShaderId(shader_info.id);
         let shader_info = ShaderInfo {
             label: shader_info.label,
             code: shader_info.code,
         };
 
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
             let on_shader_compiled = app.on_shader_compiled.clone();
             let shader_result = app.renderer.set_shader(shader_id.clone(), &shader_info);
             wasm_bindgen_futures::spawn_local(async move {
@@ -104,19 +103,17 @@ impl WasmApplication {
                     }
                 }
             });
-        })
-        .await;
+        });
     }
 
-    pub async fn remove_shader(&self, id: String) {
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
+    pub fn remove_shader(&self, id: String) {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
             let shader_id = ShaderId(id);
             app.renderer.remove_shader(&shader_id);
-        })
-        .await;
+        });
     }
 
-    pub async fn update_texture(&self, texture_id: String, image: ImageBitmap) {
+    pub fn update_texture(&self, texture_id: String, image: ImageBitmap) {
         let id = TextureId(texture_id);
         let info = TextureInfo {
             width: image.width(),
@@ -127,23 +124,21 @@ impl WasmApplication {
             data: TextureData::Bytes(vec![0, 0, 0]),
         };
 
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), {
             let id = id.clone();
             move |app| {
                 app.renderer.set_texture(id, &info);
             }
-        })
-        .await;
+        });
     }
 
-    pub async fn remove_texture(&self, id: String) {
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
+    pub fn remove_texture(&self, id: String) {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
             app.renderer.remove_texture(&TextureId(id));
-        })
-        .await;
+        });
     }
 
-    pub async fn set_on_shader_compiled(
+    pub fn set_on_shader_compiled(
         &mut self,
         on_shader_compiled: Option<web_sys::js_sys::Function>,
     ) {
@@ -166,23 +161,20 @@ impl WasmApplication {
                 },
             ))
         });
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
             app.on_shader_compiled = wrapped;
-        })
-        .await;
+        });
     }
 
-    pub async fn set_threshold_factor(&self, factor: f32) {
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+    pub fn set_threshold_factor(&self, factor: f32) {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
             app.renderer.set_threshold_factor(factor);
-        })
-        .await;
+        });
     }
 
     pub async fn focus_on(&self, position: WasmPosition) {
-        let _ = run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
             app.app.camera_controller.focus_on(position.into());
-        })
-        .await;
+        });
     }
 }
