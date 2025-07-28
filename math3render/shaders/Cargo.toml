@@ -11,5 +11,5 @@ glam = { workspace = true }
 wgpu = { workspace = true }
 
 [build-dependencies]
-wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs" }
+wesl = { version = "0.2.0" }
 wgsl_to_wgpu = { version = "0.15.0" }
