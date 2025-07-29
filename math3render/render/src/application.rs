@@ -92,6 +92,21 @@ impl Application {
 
 pub enum AppCommand {
     RunCallback(Box<dyn FnOnce(&mut Application)>),
+    CloseRequested(futures_channel::oneshot::Sender<()>),
+}
+
+pub trait AppCommands {
+    fn close_request(&self) -> futures_channel::oneshot::Receiver<()>;
+}
+
+impl AppCommands for EventLoopProxy<AppCommand> {
+    fn close_request(&self) -> futures_channel::oneshot::Receiver<()> {
+        let (sender, receiver) = futures_channel::oneshot::channel();
+        self.send_event(AppCommand::CloseRequested(sender))
+            .map_err(|_| ())
+            .expect("Tried to close");
+        receiver
+    }
 }
 
 /// Run a function on the main thread.
@@ -126,9 +141,14 @@ impl ApplicationHandler<AppCommand> for Application {
         self.create_surface(window);
     }
 
-    fn user_event(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop, event: AppCommand) {
+    fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: AppCommand) {
         match event {
             AppCommand::RunCallback(callback) => callback(self),
+            AppCommand::CloseRequested(sender) => {
+                self.on_exit();
+                event_loop.exit();
+                sender.send(()).unwrap();
+            }
         }
     }
 
@@ -145,6 +165,7 @@ impl ApplicationHandler<AppCommand> for Application {
         _window_id: winit::window::WindowId,
         event: winit::event::WindowEvent,
     ) {
+        #[cfg(not(target_arch = "wasm32"))]
         use winit::keyboard::{Key, KeyCode, NamedKey};
         self.input.handle_window_event(&event);
         match event {

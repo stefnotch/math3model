@@ -1,7 +1,9 @@
 use glam::Vec3;
 use log::error;
 use render::{
-    application::{AppCommand, Application, ShaderCompiledCallback, WasmCanvas, run_on_main},
+    application::{
+        AppCommand, AppCommands, Application, ShaderCompiledCallback, WasmCanvas, run_on_main,
+    },
     camera::{
         Angle,
         camera_controller::{self, CameraController, IsCameraController},
@@ -19,52 +21,50 @@ use crate::wasm_abi::{WasmCompilationMessage, WasmModelInfo, WasmPosition, WasmS
 
 #[wasm_bindgen]
 pub struct WasmApplication {
-    event_loop_proxy: Option<EventLoopProxy<AppCommand>>,
+    event_loop_proxy: EventLoopProxy<AppCommand>,
 }
 
 #[wasm_bindgen]
 impl WasmApplication {
-    #[wasm_bindgen(constructor)]
-    pub fn new() -> Result<WasmApplication, JsError> {
-        Ok(Self {
-            event_loop_proxy: None,
-        })
-    }
-
-    pub async fn run(&mut self, _canvas: HtmlCanvasElement) -> Result<(), JsError> {
+    pub async fn new(_canvas: HtmlCanvasElement) -> Result<WasmApplication, JsError> {
         let event_loop = EventLoop::<AppCommand>::with_user_event().build()?;
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let event_loop_proxy = event_loop.create_proxy();
-        self.event_loop_proxy = Some(event_loop_proxy.clone());
-        #[cfg(target_arch = "wasm32")]
-        let wasm_canvas = WasmCanvas::new(_canvas);
-        #[cfg(not(target_arch = "wasm32"))]
-        let wasm_canvas = WasmCanvas::new();
-        let mut application = Application::new(event_loop_proxy, |_| {}, wasm_canvas)
-            .await
-            .map_err(|e| JsError::from(&*e))?;
-        application.app.profiler_settings.gpu = true;
-        application.app.camera_controller = CameraController::new(
-            render::camera::orbitcam_controller::OrbitcamController {
-                center: Vec3::ZERO,
-                pitch: Angle::from_degrees(-20.),
-                yaw: Angle::from_degrees(190.),
-                logarithmic_distance: LogarithmicDistance::new(8.0),
+
+        wasm_bindgen_futures::spawn_local({
+            let event_loop_proxy = event_loop_proxy.clone();
+            async move {
+                #[cfg(target_arch = "wasm32")]
+                let wasm_canvas = WasmCanvas::new(_canvas);
+                #[cfg(not(target_arch = "wasm32"))]
+                let wasm_canvas = WasmCanvas::new();
+                let mut application = Application::new(event_loop_proxy, |_| {}, wasm_canvas)
+                    .await
+                    .unwrap();
+                application.app.profiler_settings.gpu = true;
+                application.app.camera_controller = CameraController::new(
+                    render::camera::orbitcam_controller::OrbitcamController {
+                        center: Vec3::ZERO,
+                        pitch: Angle::from_degrees(-20.),
+                        yaw: Angle::from_degrees(190.),
+                        logarithmic_distance: LogarithmicDistance::new(8.0),
+                    }
+                    .general_controller(),
+                    application.app.camera_controller.settings,
+                    camera_controller::ChosenKind::Orbitcam,
+                );
+                #[cfg(target_arch = "wasm32")]
+                {
+                    use winit::platform::web::EventLoopExtWebSys;
+                    event_loop.spawn_app(application);
+                }
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    event_loop.run_app(&mut application).unwrap();
+                }
             }
-            .general_controller(),
-            application.app.camera_controller.settings,
-            camera_controller::ChosenKind::Orbitcam,
-        );
-        #[cfg(target_arch = "wasm32")]
-        {
-            use winit::platform::web::EventLoopExtWebSys;
-            event_loop.spawn_app(application);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            event_loop.run_app(&mut application)?;
-        }
-        Ok(())
+        });
+        Ok(Self { event_loop_proxy })
     }
 
     pub fn update_models(&self, js_models: Vec<WasmModelInfo>) {
@@ -78,7 +78,7 @@ impl WasmApplication {
                 instance_count: v.instance_count,
             })
             .collect::<Vec<_>>();
-        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone(), move |app| {
             app.renderer.update_models(&models);
         });
     }
@@ -90,7 +90,7 @@ impl WasmApplication {
             code: shader_info.code,
         };
 
-        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone(), move |app| {
             let on_shader_compiled = app.on_shader_compiled.clone();
             let shader_result = app.renderer.set_shader(shader_id.clone(), &shader_info);
             wasm_bindgen_futures::spawn_local(async move {
@@ -107,7 +107,7 @@ impl WasmApplication {
     }
 
     pub fn remove_shader(&self, id: String) {
-        run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
+        run_on_main(self.event_loop_proxy.clone(), |app| {
             let shader_id = ShaderId(id);
             app.renderer.remove_shader(&shader_id);
         });
@@ -124,7 +124,7 @@ impl WasmApplication {
             data: TextureData::Bytes(vec![0, 0, 0]),
         };
 
-        run_on_main(self.event_loop_proxy.clone().unwrap(), {
+        run_on_main(self.event_loop_proxy.clone(), {
             let id = id.clone();
             move |app| {
                 app.renderer.set_texture(id, &info);
@@ -133,7 +133,7 @@ impl WasmApplication {
     }
 
     pub fn remove_texture(&self, id: String) {
-        run_on_main(self.event_loop_proxy.clone().unwrap(), |app| {
+        run_on_main(self.event_loop_proxy.clone(), |app| {
             app.renderer.remove_texture(&TextureId(id));
         });
     }
@@ -161,20 +161,31 @@ impl WasmApplication {
                 },
             ))
         });
-        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone(), move |app| {
             app.on_shader_compiled = wrapped;
         });
     }
 
     pub fn set_threshold_factor(&self, factor: f32) {
-        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+        run_on_main(self.event_loop_proxy.clone(), move |app| {
             app.renderer.set_threshold_factor(factor);
         });
     }
 
-    pub async fn focus_on(&self, position: WasmPosition) {
-        run_on_main(self.event_loop_proxy.clone().unwrap(), move |app| {
+    pub fn focus_on(&self, position: WasmPosition) {
+        run_on_main(self.event_loop_proxy.clone(), move |app| {
             app.app.camera_controller.focus_on(position.into());
         });
+    }
+
+    pub async fn stop(&self) {
+        let receiver = self.event_loop_proxy.close_request();
+        receiver.await.unwrap()
+    }
+}
+
+impl Drop for WasmApplication {
+    fn drop(&mut self) {
+        log::warn!("dropped");
     }
 }

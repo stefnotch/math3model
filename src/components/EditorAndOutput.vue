@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CodeEditor from "@/components/CodeEditor.vue";
-import { ref, watchEffect, h, onUnmounted, computed } from "vue";
+import { ref, watchEffect, h, onUnmounted, computed, toRef } from "vue";
 import { useLocalStorage, watchImmediate } from "@vueuse/core";
 import { useStore } from "@/stores/store.ts";
 import {
@@ -20,7 +20,7 @@ import {
   SceneFileName,
   serializeScene,
 } from "@/filesystem/scene-file.ts";
-import { type WgpuEngine } from "@/engine/wgpu-engine.ts";
+import type { WgpuEngine } from "@/engine/wgpu-engine.ts";
 import type { ObjectUpdate } from "./input/object-update.ts";
 import type { WasmModelInfo } from "math3render/pkg/web";
 import { useErrorStore } from "@/stores/error-store.ts";
@@ -31,13 +31,15 @@ import DefaultShader from "../scenes/example-scene/default-shader.wgsl?raw";
 import { useOpenFile } from "./use-open-file.ts";
 import { useFsStore } from "@/stores/fs-store.ts";
 
-// Unchanging props! No need to watch them.
 const props = defineProps<{
   fs: ReactiveFilesystem;
   engine: WgpuEngine;
 }>();
 
-syncFilesystem(props.fs, props.engine);
+syncFilesystem(
+  props.fs,
+  toRef(() => props.engine)
+);
 
 const store = useStore();
 const errorsStore = useErrorStore();

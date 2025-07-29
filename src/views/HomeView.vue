@@ -2,13 +2,13 @@
 import { ReactiveFilesystem } from "@/filesystem/reactive-files.ts";
 import { markRaw, shallowRef } from "vue";
 import { sceneFilesPromise } from "@/globals.ts";
-import { wgpuEngine, type WgpuEngine } from "@/engine/wgpu-engine.ts";
+import { wgpuEngine } from "@/engine/wgpu-engine.ts";
 
 const sceneFiles = shallowRef<ReactiveFilesystem | null>(null);
 sceneFilesPromise.then((v) => {
   sceneFiles.value = markRaw(v);
 });
-const engine = shallowRef<WgpuEngine>(markRaw(wgpuEngine));
+const engine = wgpuEngine;
 </script>
 
 <template>

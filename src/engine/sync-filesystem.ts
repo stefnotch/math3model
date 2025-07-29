@@ -5,11 +5,15 @@ import {
 } from "@/filesystem/reactive-files.ts";
 import type { WgpuEngine } from "./wgpu-engine.ts";
 import DefaultShaderCode from "../scenes/example-scene/default-shader.wgsl?raw";
+import type { ShallowRef } from "vue";
 
 /**
  * Sync the filesystem with the Rust backend
  */
-export function syncFilesystem(fs: ReactiveFilesystem, engine: WgpuEngine) {
+export function syncFilesystem(
+  fs: ReactiveFilesystem,
+  engine: ShallowRef<WgpuEngine>
+) {
   const opsSignals = new Map<FilePath, AbortController>();
   const addSignal = (path: FilePath): AbortSignal => {
     const controller = new AbortController();
@@ -42,7 +46,7 @@ export function syncFilesystem(fs: ReactiveFilesystem, engine: WgpuEngine) {
     if (extension === "wgsl") {
       stopPending(change.key);
       if (change.type === "insert") {
-        engine.updateShader({
+        engine.value.updateShader({
           id: change.key,
           label: change.key,
           code: DefaultShaderCode,
@@ -54,14 +58,14 @@ export function syncFilesystem(fs: ReactiveFilesystem, engine: WgpuEngine) {
         const signal = addSignal(file);
         fs.readTextFile(file, { signal })?.then((code) => {
           if (signal.aborted) return;
-          engine.updateShader({
+          engine.value.updateShader({
             id: file,
             label: file,
             code: code as string,
           });
         });
       } else if (change.type === "remove") {
-        engine.removeShader(change.key);
+        engine.value.removeShader(change.key);
       }
     } else if (imageFileTypes.has(extension)) {
       stopPending(change.key);
@@ -75,13 +79,13 @@ export function syncFilesystem(fs: ReactiveFilesystem, engine: WgpuEngine) {
             colorSpaceConversion: "none",
           });
           if (signal.aborted) return;
-          engine.updateTexture({
+          engine.value.updateTexture({
             id: file,
             bitmap: image,
           });
         });
       } else if (change.type === "remove") {
-        engine.removeTexture(change.key);
+        engine.value.removeTexture(change.key);
       }
     }
   });
