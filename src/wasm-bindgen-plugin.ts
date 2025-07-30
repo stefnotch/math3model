@@ -26,8 +26,12 @@ const compileWasmDebounced = debounce(compileWasm, 500);
 export default function wasmBindgenPlugin(): Plugin {
   return {
     name: "my-wasm-plugin",
-    buildStart() {
-      compileWasmDebounced();
+    buildStart: {
+      sequential: true,
+      order: "pre",
+      async handler() {
+        await compileWasm();
+      },
     },
     hotUpdate({ server, modules, file }) {
       if (!file.startsWith(rustPath)) {
