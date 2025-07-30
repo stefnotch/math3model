@@ -14,3 +14,10 @@ struct Mouse {
 struct Extra {
     hot_value: f32
 }
+
+// Group 0 is for constants that change once per frame at most
+// Matches group 0 from render_patches
+@group(0) @binding(0) var<uniform> time: Time;
+@group(0) @binding(1) var<uniform> screen: Screen;
+@group(0) @binding(2) var<uniform> mouse: Mouse;
+@group(0) @binding(3) var<uniform> extra: Extra;

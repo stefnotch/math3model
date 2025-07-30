@@ -9,9 +9,7 @@ import package::utils::{
   patch_decode,
   assert
 };
-// TODO: wesl-rs did not complain when screen and mouse were missing!
-// It was just a mangling error?
-import package::uniforms_0::{Time, Screen, Mouse, Extra};
+import package::uniforms_0::{time, screen, mouse, extra};
 
 //// START sampleObject
 fn sampleObject(input: vec2f) -> vec3f {
@@ -33,13 +31,6 @@ struct InputBuffer {
 struct ForceRenderFlag {
     flag: u32 // if flag == 0 { false } else { true }
 }
-
-// Group 0 is for constants that change once per frame at most
-// Matches group 0 from render_patches
-@group(0) @binding(0) var<uniform> time : Time;
-@group(0) @binding(1) var<uniform> screen : Screen;
-@group(0) @binding(2) var<uniform> mouse : Mouse;
-@group(0) @binding(3) var<uniform> extra : Extra;
 
 // Group 1 is for things that change once per model
 // TODO: Read back the patches_length on the CPU to know when we're going out of bounds

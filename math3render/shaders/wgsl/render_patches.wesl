@@ -1,5 +1,5 @@
 import package::utils::{RenderBufferRead, patch_decode};
-import package::uniforms_0::{Time, Screen, Mouse, Extra};
+import package::uniforms_0::{time, screen, mouse, extra};
 import package::pbr::{
     LightSource, 
     MaterialInfo, 
@@ -49,12 +49,6 @@ fn calculateTriplanarColor(input: vec3f, normal: vec3f) -> vec3f {
 }
 
 var<private> instance_id: u32;
-
-// Group 0 is for constants that change once per frame at most
-@group(0) @binding(0) var<uniform> time : Time;
-@group(0) @binding(1) var<uniform> screen : Screen;
-@group(0) @binding(2) var<uniform> mouse : Mouse;
-@group(0) @binding(3) var<uniform> extra : Extra;
 
 alias Vec3Padded = vec4<f32>;
 
