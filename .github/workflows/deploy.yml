@@ -26,19 +26,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run copy-includes
-        run: cargo run --bin copy-includes
-        working-directory: ./math3render
-      - name: Install wasm-bindgen
-        run: cargo install -f wasm-bindgen-cli
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4.0.2
+      - uses: jetli/wasm-bindgen-action@v0.2.0
         with:
-          node-version: 20.x
+          version: '0.2.100'
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 24.x
       - name: Install dependencies
         run: npm ci
       - name: Build
         run: npm run build
+        env: 
+          RUSTFLAGS: "" # Override the Rustflags from config.toml
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
