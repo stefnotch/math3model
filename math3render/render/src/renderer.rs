@@ -145,9 +145,10 @@ impl GpuApplication {
         match self.parametric_renderer.textures.entry(id) {
             Entry::Occupied(mut entry) => {
                 entry.get_mut().update(texture);
-                entry.get().clone()
             }
-            Entry::Vacant(entry) => entry.insert(ArcShift::new(texture)).clone(),
+            Entry::Vacant(entry) => {
+                entry.insert(ArcShift::new(texture));
+            }
         };
     }
 

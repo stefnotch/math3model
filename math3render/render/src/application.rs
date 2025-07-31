@@ -47,6 +47,11 @@ pub struct Application {
     pub on_shader_compiled: Option<ShaderCompiledCallback>,
     _canvas: WasmCanvas,
 }
+
+struct Cute {
+    pub texture: Option<wgpu::Texture>,
+}
+
 #[derive(Clone)]
 pub struct ShaderCompiledCallback(pub Arc<dyn Fn(&ShaderId, Vec<wgpu::CompilationMessage>)>);
 
@@ -57,6 +62,13 @@ impl Application {
         canvas: WasmCanvas,
     ) -> anyhow::Result<Self> {
         let context = WgpuContext::new().await?;
+
+        {
+            let foo = arcshift::ArcShift::new(Cute { texture: None });
+            log::info!("{:?}", foo.shared_non_reloading_get().texture.is_some());
+            std::mem::drop(foo);
+        }
+
         Ok(Self {
             app: GameRes::new(),
             gui: Gui::new(&context),
