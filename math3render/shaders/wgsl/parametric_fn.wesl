@@ -1,5 +1,4 @@
 import package::uniforms_0::{time, screen, mouse, extra};
-
 fn sampleObject(input: vec2f) -> vec3f {
     let a = time;
     let b = screen;

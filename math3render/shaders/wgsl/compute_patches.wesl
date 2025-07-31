@@ -9,10 +9,8 @@ import package::utils::{
   patch_decode,
   assert
 };
-import package::uniforms_0::{time, screen, mouse, extra};
+import package::uniforms_0::{time, screen, mouse, extra, instance_id};
 import package::parametric_fn::sampleObject;
-
-var<private> instance_id: u32;
 
 struct InputBuffer {
     threshold_factor: f32,

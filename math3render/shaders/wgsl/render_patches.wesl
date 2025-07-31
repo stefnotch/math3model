@@ -1,5 +1,5 @@
 import package::utils::{RenderBufferRead, patch_decode};
-import package::uniforms_0::{time, screen, mouse, extra};
+import package::uniforms_0::{time, screen, mouse, extra, instance_id};
 import package::pbr::{
     LightSource, 
     MaterialInfo, 
@@ -11,8 +11,6 @@ import package::pbr::{
     clamped_dot
 };
 import package::parametric_fn::{sampleObject, getColor};
-
-var<private> instance_id: u32;
 
 alias Vec3Padded = vec4<f32>;
 
