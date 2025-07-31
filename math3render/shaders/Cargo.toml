@@ -8,8 +8,9 @@ build = "build.rs"
 bytemuck = { workspace = true }
 encase = { workspace = true }
 glam = { workspace = true }
+wesl = { workspace = true }
 wgpu = { workspace = true }
 
 [build-dependencies]
-wesl = { version = "0.2.0" }
-wgsl_to_wgpu = { version = "0.15.0" }
+wesl = { workspace = true, features = ["package"] }
+wgsl_to_wgpu = { version = "0.15.1" }

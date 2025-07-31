@@ -31,8 +31,9 @@ fn main() {
 }
 
 fn compile_shaders(out_dir: &Path) -> Result<(), Box<dyn Error>> {
+    let shader_directory = "wgsl";
     let mut shader_compiler = ShaderCompiler {
-        resolver: StandardResolver::new("wgsl"),
+        resolver: StandardResolver::new(shader_directory),
         // Work around current wesl limitations
         compile_options: CompileOptions {
             strip: false,
@@ -60,6 +61,10 @@ fn compile_shaders(out_dir: &Path) -> Result<(), Box<dyn Error>> {
     shader_compiler.compile("ground_plane")?;
     shader_compiler.compile("skybox")?;
     shader_compiler.compile("render_patches")?;
+
+    wesl::PkgBuilder::new("my_package")
+        .scan_root(shader_directory)?
+        .build_artifact()?;
 
     std::fs::write(
         shader_compiler.out_dir.join("shaders.rs"),
