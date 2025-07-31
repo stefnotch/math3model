@@ -10,43 +10,7 @@ import package::pbr::{
     BRDF_lambertian,
     clamped_dot
 };
-
-//// START sampleObject
-fn sampleObject(input: vec2f) -> vec3f {
-  let a = time;
-  let b = screen;
-  let c = mouse;
-  let d = extra;
-  return vec3(input, 0.0); 
-}
-//// END sampleObject
-//// START getColor
-fn getColor(input: vec2f) -> vec3f {
-  if material.has_texture != 0u {
-    return textureSample(t_diffuse, linear_sampler, input * material.texture_scale).rgb;
-  } else {
-    return material.color_roughness.rgb;
-  }
-}
-//// END getColor
-
-// following https://www.martinpalko.com/triplanar-mapping/
-fn calculateTriplanarColor(input: vec3f, normal: vec3f) -> vec3f {
-  if material.has_texture != 0u {
-    let yuv = input.xz;
-    let zuv = input.xy;
-    let xuv = input.zy;
-
-    let yDiff = textureSample (t_diffuse, linear_sampler, yuv).rgb;
-    let xDiff = textureSample (t_diffuse, linear_sampler, xuv).rgb;
-    let zDiff = textureSample (t_diffuse, linear_sampler, zuv).rgb;
-    let blendWeights = normalize(abs(normal));
-
-  	return xDiff * blendWeights.x + yDiff * blendWeights.y + zDiff * blendWeights.z;
-  } else {
-    return material.color_roughness.rgb;
-  }
-}
+import package::parametric_fn::{sampleObject, getColor};
 
 var<private> instance_id: u32;
 
@@ -172,8 +136,13 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
     // let n = normalize(in.world_normal);
     let n = normalize(-cross(dpdxFine(in.world_position), dpdyFine(in.world_position)));
 
+    var base_color = material.color_roughness.rgb;
+    if material.has_texture != 0u {
+        base_color = textureSample(t_diffuse, linear_sampler, in.texture_coords * material.texture_scale).rgb;
+    }
+    
     var materialInfo = MaterialInfo(
-        getColor(in.texture_coords),
+        getColor(in.texture_coords, base_color),
         vec3f(0.04),
         vec3f(1.0),
         vec3f(0.0),

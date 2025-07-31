@@ -10,16 +10,7 @@ import package::utils::{
   assert
 };
 import package::uniforms_0::{time, screen, mouse, extra};
-
-//// START sampleObject
-fn sampleObject(input: vec2f) -> vec3f {
-    let a = time;
-    let b = screen;
-    let c = mouse;
-    let d = extra;
-    return vec3(input, 0.0);
-}
-//// END sampleObject
+import package::parametric_fn::sampleObject;
 
 var<private> instance_id: u32;
 

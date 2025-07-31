@@ -133,17 +133,17 @@ pub fn create_compute_patches_pipeline(
 
 fn replace_render_code(source: &str, sample_object_code: &str) -> String {
     // LATER use wesl-rs instead of this
-    let range_1 = fn_range("fn package__1render_patches_sampleObject", source);
-    let range_2 = fn_range("fn package__1render_patches_getColor", source);
+    let range_1 = fn_range("fn package__1parametric_fn_sampleObject", source);
+    let range_2 = fn_range("fn package__1parametric_fn_getColor", source);
 
     let mut result = String::new();
     result.push_str(&source[..range_1.start]);
     result.push_str(sample_object_code);
-    result.push_str("fn package__1render_patches_sampleObject(input: vec2f) -> vec3f { return sampleObject(input); }\n");
+    result.push_str("fn package__1parametric_fn_sampleObject(input: vec2f) -> vec3f { return sampleObject(input); }\n");
     result.push_str(&source[range_1.end..range_2.start]);
 
     if sample_object_code.contains("fn getColor") {
-        result.push_str("fn package__1render_patches_getColor(input: vec2f) -> vec3f { return getColor(input); }\n");
+        result.push_str("fn package__1parametric_fn_getColor(input: vec2f) -> vec3f { return getColor(input); }\n");
         result.push_str(&source[range_2.end..]);
     } else {
         result.push_str(&source[range_2.start..]);
@@ -154,7 +154,7 @@ fn replace_render_code(source: &str, sample_object_code: &str) -> String {
 
 fn replace_compute_code(source: &str, sample_object_code: &str) -> String {
     // LATER use wesl-rs instead of this
-    let range_1 = fn_range("fn package__1compute_patches_sampleObject", source);
+    let range_1 = fn_range("fn package__1parametric_fn_sampleObject", source);
 
     let mut result = String::new();
     result.push_str(&source[..range_1.start]);
@@ -164,7 +164,7 @@ fn replace_compute_code(source: &str, sample_object_code: &str) -> String {
     } else {
         result.push_str(sample_object_code);
     }
-    result.push_str("fn package__1compute_patches_sampleObject(input: vec2f) -> vec3f { return sampleObject(input); }\n");
+    result.push_str("fn package__1parametric_fn_sampleObject(input: vec2f) -> vec3f { return sampleObject(input); }\n");
     result.push_str(&source[range_1.end..]);
     result
 }
