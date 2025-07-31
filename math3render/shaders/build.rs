@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{error::Error, path::Path};
 use wesl::{
     CompileOptions, EscapeMangler, Mangler, ModulePath, StandardResolver, compile_sourcemap,
     emit_rerun_if_changed, syntax::PathOrigin,
@@ -18,10 +18,19 @@ macro_rules! log {
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    log!("Compiling shaders {:?}", &out_dir);
     let out_dir = Path::new(&out_dir);
     let start_time = std::time::Instant::now();
+    if let Err(err) = compile_shaders(&out_dir) {
+        eprintln!("{err:#?}");
+    }
+    log!(
+        "Compiled shaders {:?} in {}ms",
+        &out_dir,
+        start_time.elapsed().as_millis()
+    );
+}
 
+fn compile_shaders(out_dir: &Path) -> Result<(), Box<dyn Error>> {
     let mut shader_compiler = ShaderCompiler {
         resolver: StandardResolver::new("wgsl"),
         // Work around current wesl limitations
@@ -46,25 +55,19 @@ fn main() {
         out_dir,
     };
 
-    shader_compiler.compile("compute_patches");
-    shader_compiler.compile("copy_patches");
-    shader_compiler.compile("ground_plane");
-    shader_compiler.compile("skybox");
-    shader_compiler.compile("render_patches");
+    shader_compiler.compile("compute_patches")?;
+    shader_compiler.compile("copy_patches")?;
+    shader_compiler.compile("ground_plane")?;
+    shader_compiler.compile("skybox")?;
+    shader_compiler.compile("render_patches")?;
 
     std::fs::write(
         shader_compiler.out_dir.join("shaders.rs"),
         shader_compiler
             .out_module
             .to_generated_bindings(shader_compiler.write_options),
-    )
-    .unwrap();
-
-    log!(
-        "Finished shaders {:?} in {}ms",
-        &out_dir,
-        start_time.elapsed().as_millis()
-    );
+    )?;
+    Ok(())
 }
 
 struct ShaderCompiler<'a> {
@@ -76,7 +79,7 @@ struct ShaderCompiler<'a> {
 }
 
 impl<'a> ShaderCompiler<'a> {
-    fn compile(&mut self, shader_name: &str) {
+    fn compile(&mut self, shader_name: &str) -> Result<wesl::CompileResult, Box<dyn Error>> {
         let entry_point = ModulePath::new(PathOrigin::Absolute, vec![shader_name.to_string()]);
         let compiled = compile_sourcemap(
             &entry_point,
@@ -86,8 +89,7 @@ impl<'a> ShaderCompiler<'a> {
         )
         .inspect_err(|e| {
             eprintln!("failed to build WESL shader. {entry_point}\n{e}");
-        })
-        .unwrap();
+        })?;
         emit_rerun_if_changed(&compiled.modules, &self.resolver);
         let compiled_code = compiled.to_string();
         self.out_module
@@ -102,14 +104,14 @@ impl<'a> ShaderCompiler<'a> {
             )
             .inspect_err(|e| {
                 eprintln!("failed to build WESL shader. {entry_point}\n{e}");
-            })
-            .unwrap();
+            })?;
 
         std::fs::write(
             self.out_dir.join(format!("{shader_name}.wgsl")),
             &compiled_code,
-        )
-        .unwrap();
+        )?;
+
+        Ok(compiled)
     }
 }
 
