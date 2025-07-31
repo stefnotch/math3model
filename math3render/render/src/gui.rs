@@ -15,7 +15,13 @@ impl Gui {
         Self {
             ctx: egui::Context::default(),
             time_stats: TimeStats::default(),
-            renderer: egui_wgpu::Renderer::new(&context.device, VIEW_FORMAT, None, 1, false),
+            renderer: egui_wgpu::Renderer::new(
+                &context.device,
+                VIEW_FORMAT.remove_srgb_suffix(),
+                None,
+                1,
+                false,
+            ),
         }
     }
 
@@ -77,11 +83,18 @@ impl<'a> GuiRender<'a> {
             &screen_descriptor,
         );
 
+        let non_srgb_view = surface_texture
+            .texture()
+            .create_view(&wgpu::TextureViewDescriptor {
+                format: Some(VIEW_FORMAT.remove_srgb_suffix()),
+                ..Default::default()
+            });
+
         let mut render_pass = commands
             .begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("GUI Render Pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: surface_texture,
+                    view: &non_srgb_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Load,
