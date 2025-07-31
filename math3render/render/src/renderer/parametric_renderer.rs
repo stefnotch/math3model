@@ -6,8 +6,9 @@ use crate::{
     texture::Texture,
     wgpu_context::WgpuContext,
 };
+use arcshift::ArcShift;
 use shaders::{compute_patches, copy_patches, utils};
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 pub const PATCH_SIZES: [u32; 5] = [2, 4, 8, 16, 32];
 pub const MAX_PATCH_COUNT: u32 = 524_288;
@@ -15,10 +16,11 @@ pub const MAX_PATCH_COUNT: u32 = 524_288;
 pub struct ParametricRenderer {
     /// size/2 - 1 == one quad per four pixels
     pub quad_meshes: Vec<Mesh>,
-    pub missing_shader: Arc<ShaderPipelines>,
+    /// TODO: Somehow guarantee that I won't accidentally change the missing_shader
+    pub missing_shader: ArcShift<ShaderPipelines>,
     pub empty_texture: Texture,
-    pub shaders: HashMap<ShaderId, Arc<ShaderPipelines>>,
-    pub textures: HashMap<TextureId, Texture>,
+    pub shaders: HashMap<ShaderId, ArcShift<ShaderPipelines>>,
+    pub textures: HashMap<TextureId, ArcShift<Texture>>,
 
     pub copy_patches_pipeline: wgpu::ComputePipeline,
     pub compute_patches: ComputePatches,
@@ -32,7 +34,7 @@ impl ParametricRenderer {
                 .map(|size| *size / 2 - 1)
                 .map(|splits| Mesh::new_tesselated_quad(&context.device, splits))
                 .collect::<Vec<_>>(),
-            missing_shader: Arc::new(ShaderPipelines::new(
+            missing_shader: ArcShift::new(ShaderPipelines::new(
                 "Missing Shader",
                 shaders::DEFAULT_PARAMETRIC,
                 context,

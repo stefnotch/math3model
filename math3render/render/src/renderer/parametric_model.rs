@@ -12,17 +12,17 @@ use crate::{
     transform::Transform,
     wgpu_context::WgpuContext,
 };
+use arcshift::ArcShift;
 use encase::ShaderType;
 use glam::UVec2;
 use shaders::{compute_patches, copy_patches, render_patches, utils};
-use std::sync::Arc;
 use wgpu::Queue;
 
 pub struct ParametricModel {
     model: TypedBuffer<render_patches::Model>,
     material: TypedBuffer<render_patches::Material>,
-    t_diffuse: Texture,
-    shader: Arc<ShaderPipelines>,
+    t_diffuse: ArcShift<Texture>,
+    shader: ArcShift<ShaderPipelines>,
     render: ParametricModelRender,
     lod: ParametricModelLod,
 }
@@ -65,7 +65,7 @@ impl ParametricModel {
                 .diffuse_texture
                 .as_ref()
                 .and_then(|id| renderer.textures.get(id).cloned())
-                .unwrap_or_else(|| renderer.empty_texture.clone()),
+                .unwrap_or_else(|| ArcShift::new(renderer.empty_texture.clone())),
             shader: renderer
                 .shaders
                 .get(&model.shader_id)
@@ -174,7 +174,7 @@ impl ParametricModel {
                 );
                 let mut compute_pass =
                     commands.scoped_compute_pass(format!("Compute Patches From-To {i}"));
-                compute_pass.set_pipeline(&self.shader.compute_patches);
+                compute_pass.set_pipeline(&self.shader.get().compute_patches);
                 compute_patches::set_bind_groups(
                     &mut compute_pass.recorder,
                     &scene_data.scene_bind_group_compute,
@@ -200,7 +200,7 @@ impl ParametricModel {
                 );
                 let mut compute_pass =
                     commands.scoped_compute_pass(format!("Compute Patches To-From {i}"));
-                compute_pass.set_pipeline(&self.shader.compute_patches);
+                compute_pass.set_pipeline(&self.shader.get().compute_patches);
                 compute_patches::set_bind_groups(
                     &mut compute_pass.recorder,
                     &scene_data.scene_bind_group_compute,
@@ -234,7 +234,7 @@ impl ParametricModel {
         scene_bind_group: &render_patches::bind_groups::BindGroup0,
         quad_meshes: &[Mesh],
     ) {
-        render_pass.set_pipeline(&self.shader.render);
+        render_pass.set_pipeline(&self.shader.get().render);
 
         for (i, (render, mesh)) in self
             .render
@@ -257,7 +257,7 @@ impl ParametricModel {
                         model: self.model.as_buffer_binding(),
                         render_buffer: render.as_buffer_binding(),
                         material: self.material.as_buffer_binding(),
-                        t_diffuse: &self.t_diffuse.view,
+                        t_diffuse: &self.t_diffuse.get().view,
                     },
                 ),
             );

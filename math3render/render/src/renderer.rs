@@ -6,6 +6,7 @@ mod scene;
 mod skybox;
 mod virtual_model;
 
+use arcshift::ArcShift;
 pub use frame_data::FrameData;
 use glam::UVec2;
 use ground_plane::GroundPlane;
@@ -105,14 +106,22 @@ impl GpuApplication {
         shader_id: ShaderId,
         info: &crate::scene::ShaderInfo,
     ) -> impl Future<Output = Result<(), Vec<wgpu::CompilationMessage>>> + use<> {
-        let new_shaders = Arc::new(ShaderPipelines::new(&info.label, &info.code, &self.context));
+        use std::collections::hash_map::Entry;
+        let new_shaders = ShaderPipelines::new(&info.label, &info.code, &self.context);
         // Make sure to do this synchronously, otherwise this function would have a race condition
-        self.parametric_renderer
-            .shaders
-            .insert(shader_id, new_shaders.clone());
+        let new_shaders = match self.parametric_renderer.shaders.entry(shader_id) {
+            Entry::Occupied(mut entry) => {
+                entry.get_mut().update(new_shaders);
+                entry.get().clone()
+            }
+            Entry::Vacant(entry) => entry.insert(ArcShift::new(new_shaders)).clone(),
+        };
 
         async move {
-            let compilation_results = new_shaders.get_compilation_info().await;
+            let compilation_results = new_shaders
+                .shared_non_reloading_get()
+                .get_compilation_info()
+                .await;
             let is_error = compilation_results
                 .iter()
                 .any(|v| v.message_type == wgpu::CompilationMessageType::Error);
@@ -130,8 +139,16 @@ impl GpuApplication {
     }
 
     pub fn set_texture(&mut self, id: TextureId, info: &TextureInfo) {
+        use std::collections::hash_map::Entry;
         let texture = Texture::new_rgba(&self.context.device, &self.context.queue, info);
-        self.parametric_renderer.textures.insert(id, texture);
+
+        match self.parametric_renderer.textures.entry(id) {
+            Entry::Occupied(mut entry) => {
+                entry.get_mut().update(texture);
+                entry.get().clone()
+            }
+            Entry::Vacant(entry) => entry.insert(ArcShift::new(texture)).clone(),
+        };
     }
 
     pub fn remove_texture(&mut self, id: &TextureId) {
