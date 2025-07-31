@@ -6,19 +6,19 @@ use crate::{
     texture::Texture,
     wgpu_context::WgpuContext,
 };
-use arcshift::ArcShift;
 use shaders::{compute_patches, copy_patches, utils};
 use std::collections::HashMap;
 
 pub const PATCH_SIZES: [u32; 5] = [2, 4, 8, 16, 32];
 pub const MAX_PATCH_COUNT: u32 = 524_288;
 
+pub type ArcShift<T> = std::sync::Arc<std::sync::RwLock<T>>;
+
 pub struct ParametricRenderer {
     /// size/2 - 1 == one quad per four pixels
     pub quad_meshes: Vec<Mesh>,
-    /// TODO: Somehow guarantee that I won't accidentally change the missing_shader
     pub missing_shader: ArcShift<ShaderPipelines>,
-    pub empty_texture: Texture,
+    pub empty_texture: ArcShift<Texture>,
     pub shaders: HashMap<ShaderId, ArcShift<ShaderPipelines>>,
     pub textures: HashMap<TextureId, ArcShift<Texture>>,
 
@@ -34,19 +34,20 @@ impl ParametricRenderer {
                 .map(|size| *size / 2 - 1)
                 .map(|splits| Mesh::new_tesselated_quad(&context.device, splits))
                 .collect::<Vec<_>>(),
-            missing_shader: ArcShift::new(ShaderPipelines::new(
-                "Missing Shader",
-                shaders::DEFAULT_PARAMETRIC,
-                context,
-            )),
-            empty_texture: Texture::new_rgba(
-                &context.device,
-                &context.queue,
-                &TextureInfo {
-                    width: 1,
-                    height: 1,
-                    data: TextureData::Bytes(vec![u8::MAX, u8::MAX, u8::MAX, u8::MAX]),
-                },
+            missing_shader: ArcShift::new(
+                ShaderPipelines::new("Missing Shader", shaders::DEFAULT_PARAMETRIC, context).into(),
+            ),
+            empty_texture: ArcShift::new(
+                Texture::new_rgba(
+                    &context.device,
+                    &context.queue,
+                    &TextureInfo {
+                        width: 1,
+                        height: 1,
+                        data: TextureData::Bytes(vec![u8::MAX, u8::MAX, u8::MAX, u8::MAX]),
+                    },
+                )
+                .into(),
             ),
             shaders: Default::default(),
             textures: Default::default(),

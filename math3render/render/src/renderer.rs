@@ -6,7 +6,6 @@ mod scene;
 mod skybox;
 mod virtual_model;
 
-use arcshift::ArcShift;
 pub use frame_data::FrameData;
 use glam::UVec2;
 use ground_plane::GroundPlane;
@@ -19,7 +18,10 @@ use wgpu_profiler::GpuProfiler;
 use crate::{
     game::GameRes,
     gui::GuiRender,
-    renderer::{parametric_model::ParametricModel, parametric_renderer::ParametricRenderer},
+    renderer::{
+        parametric_model::ParametricModel,
+        parametric_renderer::{ArcShift, ParametricRenderer},
+    },
     scene::{Model, ShaderId, TextureId, TextureInfo},
     texture::Texture,
     time::{FrameCounter, Seconds},
@@ -108,20 +110,18 @@ impl GpuApplication {
     ) -> impl Future<Output = Result<(), Vec<wgpu::CompilationMessage>>> + use<> {
         use std::collections::hash_map::Entry;
         let new_shaders = ShaderPipelines::new(&info.label, &info.code, &self.context);
+        let compilation_results = new_shaders.get_compilation_info();
         // Make sure to do this synchronously, otherwise this function would have a race condition
-        let new_shaders = match self.parametric_renderer.shaders.entry(shader_id) {
+        match self.parametric_renderer.shaders.entry(shader_id) {
             Entry::Occupied(mut entry) => {
-                entry.get_mut().update(new_shaders);
+                *entry.get_mut().write().unwrap() = new_shaders;
                 entry.get().clone()
             }
-            Entry::Vacant(entry) => entry.insert(ArcShift::new(new_shaders)).clone(),
+            Entry::Vacant(entry) => entry.insert(ArcShift::new(new_shaders.into())).clone(),
         };
 
         async move {
-            let compilation_results = new_shaders
-                .shared_non_reloading_get()
-                .get_compilation_info()
-                .await;
+            let compilation_results = compilation_results.await;
             let is_error = compilation_results
                 .iter()
                 .any(|v| v.message_type == wgpu::CompilationMessageType::Error);
@@ -144,10 +144,10 @@ impl GpuApplication {
 
         match self.parametric_renderer.textures.entry(id) {
             Entry::Occupied(mut entry) => {
-                entry.get_mut().update(texture);
+                *entry.get_mut().write().unwrap() = texture;
             }
             Entry::Vacant(entry) => {
-                entry.insert(ArcShift::new(texture));
+                entry.insert(ArcShift::new(texture.into()));
             }
         };
     }

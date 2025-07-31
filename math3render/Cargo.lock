@@ -99,12 +99,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
-name = "arcshift"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95bcd258b3b56d33539bfd0c0bd423b74ee05abe628386a3a000a88c0147748f"
-
-[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1871,7 +1865,6 @@ name = "render"
 version = "0.2.0"
 dependencies = [
  "anyhow",
- "arcshift",
  "bytemuck",
  "egui",
  "egui-wgpu",
