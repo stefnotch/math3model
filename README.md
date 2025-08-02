@@ -1,10 +1,10 @@
-# Math2Model: Web-Based Real-Time Parametric Modeling Tool
+# Math3Model: Web-Based Real-Time Parametric Modeling Tool
 
-Welcome to [Math2Model](https://cg-tuwien.github.io/Math2Model/), an online editor for parametric modeling of objects described through mathematical functions. It features two ways of user input: Code-based modeling and node-based modeling.
+Welcome to [Math3Model](https://stefnotch.github.io/math3model/), an online editor for parametric modeling of objects described through mathematical functions. It features two ways of user input: Code-based modeling and node-based modeling.
 
-## What is Math2Model?
+## What is Math3Model?
 
-Math2Model is a tool that allows the instant rendering of mathematical functions given in parametric form (with parameters `u` and `v` as input). One simple example would be rendering a sphere model in parametric format:
+Math3Model is a tool that allows the instant rendering of mathematical functions given in parametric form (with parameters `u` and `v` as input). One simple example would be rendering a sphere model in parametric format:
 
 ```wgsl
 fn sampleObject(input: vec2f) -> vec3f {
