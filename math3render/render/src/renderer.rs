@@ -109,6 +109,7 @@ impl GpuApplication {
         use std::collections::hash_map::Entry;
         let compilation_results = match ShaderPipelines::new(&info.label, &info.code, &self.context)
         {
+            // TODO: Document that it's invalid to have a model that points at a missing shader
             Ok(new_shaders) => {
                 let compile_info = new_shaders.get_compilation_info();
                 // Make sure to do this synchronously, otherwise this function would have a race condition
@@ -122,7 +123,13 @@ impl GpuApplication {
                 };
                 Ok(compile_info)
             }
-            Err(e) => Err(e),
+            Err(e) => {
+                self.parametric_renderer
+                    .shaders
+                    .entry(shader_id)
+                    .or_insert_with(|| self.parametric_renderer.missing_shader.clone());
+                Err(e)
+            }
         };
 
         async move {
