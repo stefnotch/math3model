@@ -6,6 +6,7 @@ mod scene;
 mod skybox;
 mod virtual_model;
 
+use arcshift::ArcShift;
 pub use frame_data::FrameData;
 use glam::UVec2;
 use ground_plane::GroundPlane;
@@ -18,10 +19,7 @@ use wgpu_profiler::GpuProfiler;
 use crate::{
     game::GameRes,
     gui::GuiRender,
-    renderer::{
-        parametric_model::ParametricModel,
-        parametric_renderer::{ArcShift, ParametricRenderer},
-    },
+    renderer::{parametric_model::ParametricModel, parametric_renderer::ParametricRenderer},
     scene::{Model, ShaderId, TextureId, TextureInfo},
     texture::Texture,
     time::{FrameCounter, Seconds},
@@ -116,10 +114,11 @@ impl GpuApplication {
                 // Make sure to do this synchronously, otherwise this function would have a race condition
                 match self.parametric_renderer.shaders.entry(shader_id) {
                     Entry::Occupied(mut entry) => {
-                        *entry.get_mut().write().unwrap() = new_shaders;
-                        entry.get().clone()
+                        entry.get_mut().update(new_shaders);
                     }
-                    Entry::Vacant(entry) => entry.insert(ArcShift::new(new_shaders.into())).clone(),
+                    Entry::Vacant(entry) => {
+                        entry.insert(ArcShift::new(new_shaders));
+                    }
                 };
                 Ok(compile_info)
             }
@@ -153,10 +152,10 @@ impl GpuApplication {
 
         match self.parametric_renderer.textures.entry(id) {
             Entry::Occupied(mut entry) => {
-                *entry.get_mut().write().unwrap() = texture;
+                entry.get_mut().update(texture);
             }
             Entry::Vacant(entry) => {
-                entry.insert(ArcShift::new(texture.into()));
+                entry.insert(ArcShift::new(texture));
             }
         };
     }

@@ -6,13 +6,12 @@ use crate::{
     texture::Texture,
     wgpu_context::WgpuContext,
 };
+use arcshift::ArcShift;
 use shaders::{compute_patches, copy_patches, utils};
 use std::collections::HashMap;
 
 pub const PATCH_SIZES: [u32; 5] = [2, 4, 8, 16, 32];
 pub const MAX_PATCH_COUNT: u32 = 524_288;
-
-pub type ArcShift<T> = std::sync::Arc<std::sync::RwLock<T>>;
 
 pub struct ParametricRenderer {
     /// size/2 - 1 == one quad per four pixels
