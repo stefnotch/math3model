@@ -35,7 +35,9 @@ impl ParametricRenderer {
                 .map(|splits| Mesh::new_tesselated_quad(&context.device, splits))
                 .collect::<Vec<_>>(),
             missing_shader: ArcShift::new(
-                ShaderPipelines::new("Missing Shader", shaders::DEFAULT_PARAMETRIC, context).into(),
+                ShaderPipelines::new("Missing Shader", shaders::DEFAULT_PARAMETRIC, context)
+                    .unwrap()
+                    .into(),
             ),
             empty_texture: ArcShift::new(
                 Texture::new_rgba(

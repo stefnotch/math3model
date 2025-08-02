@@ -1877,6 +1877,7 @@ dependencies = [
  "shaders",
  "web-sys",
  "web-time",
+ "wesl",
  "wgpu",
  "wgpu-profiler",
  "winit",

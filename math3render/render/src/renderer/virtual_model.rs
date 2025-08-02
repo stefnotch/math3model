@@ -5,27 +5,32 @@ use crate::{
 };
 use glam::Vec4;
 use shaders::{compute_patches, render_patches};
+use wesl::PkgResolver;
 use wgpu::ShaderModule;
 
 pub struct ShaderPipelines {
-    /// Pipeline per model, for different parametric functions.
     pub compute_patches: wgpu::ComputePipeline,
-    /// Pipeline per model, for different parametric functions.
     pub render: wgpu::RenderPipeline,
     pub shaders: [ShaderModule; 2],
 }
 
 impl ShaderPipelines {
-    pub fn new(label: &str, code: &str, context: &WgpuContext) -> Self {
+    pub fn new(
+        label: &str,
+        code: &str,
+        context: &WgpuContext,
+    ) -> Result<Self, wgpu::CompilationMessage> {
         let (compute_patches, shader_a) =
-            create_compute_patches_pipeline(label, &context.device, code);
-        let (render, shader_b) = create_render_pipeline(label, context, code);
+            create_compute_patches_pipeline(label, &context.device, code)
+                .map_err(error_to_compilation_message)?;
+        let (render, shader_b) =
+            create_render_pipeline(label, context, code).map_err(error_to_compilation_message)?;
 
-        Self {
+        Ok(Self {
             compute_patches,
             render,
             shaders: [shader_a, shader_b],
-        }
+        })
     }
 
     pub fn get_compilation_info(
@@ -52,17 +57,41 @@ impl MaterialInfo {
     }
 }
 
+fn error_to_compilation_message(error: wesl::Error) -> wgpu::CompilationMessage {
+    let span = error_span(&error);
+    wgpu::CompilationMessage {
+        message: error.to_string(),
+        message_type: wgpu::CompilationMessageType::Error,
+        // TODO: Correctly set line num and line pos
+        location: span.map(|span| wgpu::SourceLocation {
+            line_number: 0,
+            line_position: 0,
+            offset: span.start as u32,
+            length: span.range().len() as u32,
+        }),
+    }
+}
+
+fn error_span(error: &wesl::Error) -> Option<wesl::syntax::Span> {
+    match error {
+        wesl::Error::ParseError(error) => Some(error.span),
+        wesl::Error::Error(diagnostic) => diagnostic.detail.span,
+        _ => None,
+    }
+}
+
 fn create_render_pipeline(
     label: &str,
     context: &WgpuContext,
     code: &str,
-) -> (wgpu::RenderPipeline, ShaderModule) {
+) -> Result<(wgpu::RenderPipeline, ShaderModule), wesl::Error> {
     let device = &context.device;
+    let source = compile_shader("render_patches", code)?;
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: Some(&format!("Render Shader {label}")),
-        source: wgpu::ShaderSource::Wgsl(replace_render_code(render_patches::SOURCE, code).into()),
+        source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Owned(source.to_string())),
     });
-    (
+    Ok((
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some(&format!("Render Pipeline {label}")),
             layout: Some(&render_patches::create_pipeline_layout(device)),
@@ -111,20 +140,20 @@ fn create_render_pipeline(
             cache: Default::default(),
         }),
         shader,
-    )
+    ))
 }
 
 pub fn create_compute_patches_pipeline(
     label: &str,
     device: &wgpu::Device,
     code: &str,
-) -> (wgpu::ComputePipeline, ShaderModule) {
-    let source = replace_compute_code(compute_patches::SOURCE, code);
+) -> Result<(wgpu::ComputePipeline, ShaderModule), wesl::Error> {
+    let source = compile_shader("compute_patches", code)?;
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: None,
-        source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(source.as_ref())),
+        source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Owned(source.to_string())),
     });
-    (
+    Ok((
         device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             label: Some(&format!("Compute Patches {label}")),
             layout: Some(&compute_patches::create_pipeline_layout(device)),
@@ -134,50 +163,68 @@ pub fn create_compute_patches_pipeline(
             cache: Default::default(),
         }),
         shader,
+    ))
+}
+
+fn compile_shader(
+    name: &str,
+    sample_object_code: &str,
+) -> Result<wesl::CompileResult, wesl::Error> {
+    let resolver = OverlayResolver::new(sample_object_code);
+    // Work around current wesl limitations
+    let compile_options = wesl::CompileOptions {
+        strip: false,
+        lazy: false,
+        mangle_root: true,
+        ..Default::default()
+    };
+    let entry_point = wesl::ModulePath::new(
+        wesl::syntax::PathOrigin::Package(shaders::PACKAGE.crate_name.to_string()),
+        vec!["my_package".to_string(), name.to_string()],
+    );
+
+    wesl::compile_sourcemap(
+        &entry_point,
+        &resolver,
+        &wesl::EscapeMangler,
+        &compile_options,
     )
 }
 
-fn replace_render_code(source: &str, sample_object_code: &str) -> String {
-    // LATER use wesl-rs instead of this
-    let range_1 = fn_range("fn package__1parametric_fn_sampleObject", source);
-    let range_2 = fn_range("fn package__1parametric_fn_getColor", source);
-
-    let mut result = String::new();
-    result.push_str(&source[..range_1.start]);
-    result.push_str(sample_object_code);
-    result.push_str("fn package__1parametric_fn_sampleObject(input: vec2f) -> vec3f { return sampleObject(input); }\n");
-    result.push_str(&source[range_1.end..range_2.start]);
-
-    if sample_object_code.contains("fn getColor") {
-        result.push_str("fn package__1parametric_fn_getColor(input: vec2f) -> vec3f { return getColor(input); }\n");
-        result.push_str(&source[range_2.end..]);
-    } else {
-        result.push_str(&source[range_2.start..]);
-    }
-
-    result
+struct OverlayResolver<'a> {
+    sample_object_code: &'a str,
+    pkg_resolver: PkgResolver,
 }
 
-fn replace_compute_code(source: &str, sample_object_code: &str) -> String {
-    // LATER use wesl-rs instead of this
-    let range_1 = fn_range("fn package__1parametric_fn_sampleObject", source);
-
-    let mut result = String::new();
-    result.push_str(&source[..range_1.start]);
-    if sample_object_code.contains("fn getColor") {
-        let get_color = sample_object_code.find("fn getColor").unwrap();
-        result.push_str(&sample_object_code[0..get_color]);
-    } else {
-        result.push_str(sample_object_code);
+impl<'a> OverlayResolver<'a> {
+    fn new(sample_object_code: &'a str) -> Self {
+        let mut pkg_resolver = PkgResolver::new();
+        pkg_resolver.add_package(&shaders::PACKAGE);
+        Self {
+            sample_object_code,
+            pkg_resolver,
+        }
     }
-    result.push_str("fn package__1parametric_fn_sampleObject(input: vec2f) -> vec3f { return sampleObject(input); }\n");
-    result.push_str(&source[range_1.end..]);
-    result
 }
 
-fn fn_range(fn_header: &str, source: &str) -> std::ops::Range<usize> {
-    let start = source.find(fn_header).unwrap();
-    // LATER Count the curly braces (parsing)
-    let end = source[start..].find("}").unwrap() + 1 + start;
-    start..end
+impl<'source> wesl::Resolver for OverlayResolver<'source> {
+    fn resolve_source<'a>(
+        &'a self,
+        path: &wesl::ModulePath,
+    ) -> Result<std::borrow::Cow<'a, str>, wesl::ResolveError> {
+        if let &wesl::ModulePath {
+            origin: wesl::syntax::PathOrigin::Package(ref o),
+            ref components,
+        } = path
+            && o == shaders::PACKAGE.crate_name
+            && components == &["my_package", "parametric_fn"]
+        {
+            Ok(std::borrow::Cow::Borrowed(self.sample_object_code))
+        } else {
+            self.pkg_resolver.resolve_source(path)
+        }
+    }
+    fn display_name(&self, path: &wesl::ModulePath) -> Option<String> {
+        self.pkg_resolver.display_name(path)
+    }
 }

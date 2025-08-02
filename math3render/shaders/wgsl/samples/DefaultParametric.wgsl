@@ -4,3 +4,7 @@ fn sampleObject(input: vec2f) -> vec3f {
     let pos = vec3(input.x, input.y, 0.0);        
     return pos;
 }
+
+fn getColor(input: vec2f, base_color: vec3f) -> vec3f {
+    return base_color;
+}
