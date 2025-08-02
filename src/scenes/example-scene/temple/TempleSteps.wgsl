@@ -35,3 +35,7 @@ fn pyramid_normal(a: vec2f) -> vec2f {
 fn triangle_wave(v: f32) -> f32 {
     return abs(2.*fract(v)-1.);
 }
+
+fn getColor(input: vec2f, base_color: vec3f) -> vec3f {
+    return base_color;
+}

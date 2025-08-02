@@ -154,13 +154,6 @@ impl ApplicationHandler<AppCommand> for Application {
         }
     }
 
-    fn new_events(
-        &mut self,
-        _event_loop: &winit::event_loop::ActiveEventLoop,
-        _cause: winit::event::StartCause,
-    ) {
-    }
-
     fn window_event(
         &mut self,
         event_loop: &winit::event_loop::ActiveEventLoop,
@@ -219,7 +212,11 @@ impl ApplicationHandler<AppCommand> for Application {
                         }
                     }
                 }
+
                 _ = event;
+            }
+            WindowEvent::Focused(is_focused) => {
+                self.gui.next_input.focused = is_focused;
             }
             _ => (),
         }
@@ -241,27 +238,19 @@ impl Application {
         self.app.update(&input);
 
         if let Some(surface) = self.surface.as_mut() {
-            let raw_input = egui::RawInput {
-                viewport_id: egui::ViewportId::ROOT,
-                viewports: egui::ViewportIdMap::from_iter([(
-                    egui::ViewportId::ROOT,
-                    egui::ViewportInfo {
-                        native_pixels_per_point: self
-                            .window
-                            .as_ref()
-                            .map(|w| w.scale_factor() as f32),
-                        ..Default::default()
-                    },
-                )]),
-                screen_rect: Some(egui::Rect::from_min_size(
-                    Default::default(),
-                    egui::Vec2::new(surface.size().x as f32, surface.size().y as f32),
-                )),
+            self.gui.next_input.viewports = egui::ViewportIdMap::from_iter([(
+                egui::ViewportId::ROOT,
+                egui::ViewportInfo {
+                    native_pixels_per_point: self.window.as_ref().map(|w| w.scale_factor() as f32),
+                    ..Default::default()
+                },
+            )]);
+            self.gui.next_input.screen_rect = Some(egui::Rect::from_min_size(
+                Default::default(),
+                egui::Vec2::new(surface.size().x as f32, surface.size().y as f32),
+            ));
 
-                ..Default::default()
-            };
-
-            let gui_render = self.gui.update(raw_input);
+            let gui_render = self.gui.update(&self.renderer.models);
 
             match self.renderer.render(surface, &self.app, gui_render) {
                 Ok(Some(render_results)) => {

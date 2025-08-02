@@ -119,7 +119,7 @@ export class ReactiveFilesystem implements WritableFiles {
         }
       );
       const writable = await fileHandle.createWritable();
-      await writable.write(content);
+      await writable.write(content as any);
       await writable.close();
     });
   }
@@ -137,7 +137,7 @@ export class ReactiveFilesystem implements WritableFiles {
         }
       );
       const writable = await fileHandle.createWritable();
-      await writable.write(content);
+      await writable.write(content as any);
       await writable.close();
     });
   }

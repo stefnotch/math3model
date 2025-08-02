@@ -100,7 +100,7 @@ fn getLeafPos(u: f32, v: f32) -> vec3f {
     pos.x *= /* leaves xy scale: */ 3.392f;
     pos.y *= /* leaves xy scale: */ 3.392f;
     return pos;
-};
+}
 
 fn getPalmTreeTrunkPos(controlPoints: array<vec3f, 4>, u: f32, v: f32, thickness: f32) -> vec3f
 {
@@ -147,4 +147,8 @@ fn sampleObject(input: vec2f) -> vec3f {
     let p = getPalmTreeTrunkPos(controlPoints, pos.x, pos.z, 0.3);
 
     return p;
+}
+
+fn getColor(input: vec2f, base_color: vec3f) -> vec3f {
+    return base_color;
 }

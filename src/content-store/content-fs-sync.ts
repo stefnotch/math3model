@@ -76,7 +76,7 @@ async function syncFiles(toSync: FilesToSync) {
       });
       const writable = await fileHandle.createWritable();
       try {
-        await writable.write(data);
+        await writable.write(data as any);
       } finally {
         await writable.close();
       }

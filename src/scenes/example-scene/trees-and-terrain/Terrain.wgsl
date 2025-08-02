@@ -112,7 +112,7 @@ fn sampleObject(input2: vec2f) -> vec3f {
     return ground_at(input2.x, input2.y);
 }
 
-fn getColor(input: vec2f) -> vec3f {
+fn getColor(input: vec2f, base_color: vec3f) -> vec3f {
     let height = sampleObject(input).y;
     var offset = 0.0;
     let thresh = -0.3;

@@ -39,7 +39,7 @@ pub struct GpuApplication {
     skybox: Skybox,
     ground_plane: GroundPlane,
     parametric_renderer: ParametricRenderer,
-    models: Vec<(Model, ParametricModel)>,
+    pub models: Vec<(Model, ParametricModel)>,
 }
 
 impl GpuApplication {
@@ -110,6 +110,14 @@ impl GpuApplication {
         let compilation_results = match ShaderPipelines::new(&info.label, &info.code, &self.context)
         {
             // TODO: Document that it's invalid to have a model that points at a missing shader
+            /*Othrewise this could happen
+            1 Create model => reference nonexisting shader
+            2 Add shader
+
+            Because when I add a shader, I update a dict. But the model doesn't re-fetch.
+            I could create a dummy shader in step 1. But then I need to clean up the dict when the model disappears.
+
+            I could fix 1 by just disallowing references to shaders that do not exist? */
             Ok(new_shaders) => {
                 let compile_info = new_shaders.get_compilation_info();
                 // Make sure to do this synchronously, otherwise this function would have a race condition

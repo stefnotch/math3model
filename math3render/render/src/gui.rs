@@ -1,4 +1,5 @@
 use crate::{
+    scene::Model,
     time::TimeStats,
     wgpu_context::{VIEW_FORMAT, WgpuContext, WgpuSurface},
 };
@@ -7,6 +8,7 @@ use wgpu::TextureView;
 pub struct Gui {
     pub ctx: egui::Context,
     pub time_stats: TimeStats,
+    pub next_input: egui::RawInput,
     renderer: egui_wgpu::Renderer,
 }
 
@@ -15,6 +17,10 @@ impl Gui {
         Self {
             ctx: egui::Context::default(),
             time_stats: TimeStats::default(),
+            next_input: egui::RawInput {
+                viewport_id: egui::ViewportId::ROOT,
+                ..Default::default()
+            },
             renderer: egui_wgpu::Renderer::new(
                 &context.device,
                 VIEW_FORMAT.remove_srgb_suffix(),
@@ -25,8 +31,17 @@ impl Gui {
         }
     }
 
-    pub fn update<'a>(&'a mut self, raw_input: egui::RawInput) -> GuiRender<'a> {
-        let mut full_output = self.ctx.run(raw_input, |ctx| {
+    pub fn update<'a>(
+        &'a mut self,
+        scene: &[(Model, crate::renderer::parametric_model::ParametricModel)],
+    ) -> GuiRender<'a> {
+        let mut full_output = self.ctx.run(self.next_input.take(), |ctx| {
+            egui::SidePanel::left("left_panel")
+                .show_separator_line(true)
+                .show(ctx, |ui| {
+                    ui.label("SCENE");
+                });
+
             egui::TopBottomPanel::bottom("bottom_panel")
                 .frame(egui::Frame::NONE)
                 .show_separator_line(false)

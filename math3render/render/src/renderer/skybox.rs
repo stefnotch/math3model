@@ -98,6 +98,7 @@ impl Skybox {
         surface: &WgpuSurface,
         render_data: &FrameData,
     ) {
+        // Remove position from view matrix
         let view_projection_matrix = render_data.camera.projection_matrix(surface.size())
             * glam::Mat4::from_mat3(glam::Mat3::from_mat4(render_data.camera.view_matrix()));
         self.uniforms.write_buffer(

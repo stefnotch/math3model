@@ -32,7 +32,7 @@ fn vs_main(
     var output: VertexOutput;
     // we are using reverse-z, so the depth range is [1.0, 0.0], with 0.0 being faaaar away
     // and the GPU is about to divide by w
-    output.pos = vec4f(pos.xy, 0.0, 1.0);
+    output.pos = vec4f(pos.xy, 0.0, pos.z);
     output.tex_coords = in.position.xyz;
     return output;
 }

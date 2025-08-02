@@ -223,3 +223,7 @@ fn sampleObject(input: vec2f) -> vec3f {
 
     return p;    
 }
+
+fn getColor(input: vec2f, base_color: vec3f) -> vec3f {
+    return base_color;
+}

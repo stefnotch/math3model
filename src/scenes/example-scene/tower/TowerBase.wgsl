@@ -1,17 +1,4 @@
-fn Cylinder(input2: vec2f) -> vec3f {
-    let pos = vec3(2. * input2.x, 0.0, 2. * input2.y) * 3.14159265359;
-    var y = input2.x;
-
-    var sx = sin(pos.x);
-    var sy = sin(pos.z);
-    var cx = cos(pos.x);
-    var cy = cos(pos.z);
-
-    var x = cy;
-    var z = sy;
-
-    return vec3f(x, y, z);
-}
+import package::uniforms_0::{time, screen, mouse, extra, instance_id};
 
 fn sampleObject(input: vec2f) -> vec3f {
   var positionUpdated = bricks(input);
@@ -136,19 +123,18 @@ fn calcWindowOffset(pos: vec3f) -> f32 {
     return 1-isWindowHeight;
 }
 
-fn getColor(input: vec2f) -> vec3f {
+fn getColor(input: vec2f, base_color: vec3f) -> vec3f {
     let posUv = vec3(input.y*tau, 0.0, input.x);
-    let baseTower = material.color_roughness.rgb*(calcSurfaceOffset(posUv)+0.4);
+    let baseTower = base_color*(calcSurfaceOffset(posUv)+0.4);
 
     var color = baseTower;
     var window = calcWindowOffset(posUv);
     var windowOuter = discreteWindow(window, 1);
 
     color *= windowOuter; // this should eliminate color in window outer
-    let winBorderColor = mix(windowOuterColor,material.color_roughness.rgb,0.7);
-    let winCenterColor = mix(windowInnerColor,material.color_roughness.rgb,0.3);
+    let winBorderColor = mix(windowOuterColor,base_color,0.7);
+    let winCenterColor = mix(windowInnerColor,base_color,0.3);
     color+=(1-windowOuter)*
         mix(winCenterColor,winBorderColor,discreteWindow(window,0.89));
     return color;
 }
-

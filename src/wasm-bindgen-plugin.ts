@@ -10,9 +10,15 @@ function debounce(callback: () => void, delay: number) {
     timer = setTimeout(() => {
       const elapsed = Date.now() - lastRunFinished;
       if (elapsed >= delay) {
-        Promise.resolve(callback()).then(() => {
-          lastRunFinished = Date.now();
-        });
+        Promise.resolve(callback()).then(
+          () => {
+            lastRunFinished = Date.now();
+          },
+          (err) => {
+            console.warn("Wasm failed to compile", err);
+            lastRunFinished = Date.now();
+          }
+        );
       } else {
         debounce(callback, delay - elapsed);
       }
@@ -21,6 +27,7 @@ function debounce(callback: () => void, delay: number) {
 }
 
 const rustPath = normalizePath(resolve("./math3render"));
+const rustPkgPath = normalizePath(resolve("./math3render/pkg"));
 const compileWasmDebounced = debounce(compileWasm, 500);
 
 export default function wasmBindgenPlugin(): Plugin {
@@ -33,24 +40,21 @@ export default function wasmBindgenPlugin(): Plugin {
         await compileWasm();
       },
     },
-    hotUpdate({ server, modules, file }) {
+    hotUpdate({ file }) {
       if (!file.startsWith(rustPath)) {
-        return modules;
+        return;
       }
-      if (file.endsWith(".wasm") || file.endsWith(".js")) {
-        return modules;
+      if (file.startsWith(rustPkgPath)) {
+        // Hot update
+        return;
       } else {
-        // Ignore
-        server.ws.send({
-          type: "custom",
-          event: "special-update",
-          data: {},
-        });
+        // Ignore updates to other files
         return [];
       }
     },
     watchChange(id) {
-      if (id.startsWith(rustPath)) {
+      // Watch Rust files. Ignore the generated files.
+      if (id.startsWith(rustPath) && !id.startsWith(rustPkgPath)) {
         compileWasmDebounced();
       }
     },
