@@ -178,10 +178,8 @@ fn compile_shader(
         mangle_root: true,
         ..Default::default()
     };
-    let entry_point = wesl::ModulePath::new(
-        wesl::syntax::PathOrigin::Package(shaders::PACKAGE.crate_name.to_string()),
-        vec!["my_package".to_string(), name.to_string()],
-    );
+    let entry_point =
+        wesl::ModulePath::new(wesl::syntax::PathOrigin::Absolute, vec![name.to_string()]);
 
     wesl::compile_sourcemap(
         &entry_point,
@@ -213,13 +211,21 @@ impl<'source> wesl::Resolver for OverlayResolver<'source> {
         path: &wesl::ModulePath,
     ) -> Result<std::borrow::Cow<'a, str>, wesl::ResolveError> {
         if let &wesl::ModulePath {
-            origin: wesl::syntax::PathOrigin::Package(ref o),
+            origin: wesl::syntax::PathOrigin::Absolute,
             ref components,
         } = path
-            && o == shaders::PACKAGE.crate_name
-            && components == &["my_package", "parametric_fn"]
+            && components == &["parametric_fn"]
         {
             Ok(std::borrow::Cow::Borrowed(self.sample_object_code))
+        } else if let &wesl::ModulePath {
+            origin: wesl::syntax::PathOrigin::Absolute,
+            ref components,
+        } = path
+        {
+            self.pkg_resolver.resolve_source(&wesl::ModulePath {
+                origin: wesl::syntax::PathOrigin::Package(shaders::PACKAGE.root.name.to_string()),
+                components: components.clone(),
+            })
         } else {
             self.pkg_resolver.resolve_source(path)
         }

@@ -109,19 +109,28 @@ impl GpuApplication {
         info: &crate::scene::ShaderInfo,
     ) -> impl Future<Output = Result<(), Vec<wgpu::CompilationMessage>>> + use<> {
         use std::collections::hash_map::Entry;
-        let new_shaders = ShaderPipelines::new(&info.label, &info.code, &self.context);
-        let compilation_results = new_shaders.get_compilation_info();
-        // Make sure to do this synchronously, otherwise this function would have a race condition
-        match self.parametric_renderer.shaders.entry(shader_id) {
-            Entry::Occupied(mut entry) => {
-                *entry.get_mut().write().unwrap() = new_shaders;
-                entry.get().clone()
+        let compilation_results = match ShaderPipelines::new(&info.label, &info.code, &self.context)
+        {
+            Ok(new_shaders) => {
+                let compile_info = new_shaders.get_compilation_info();
+                // Make sure to do this synchronously, otherwise this function would have a race condition
+                match self.parametric_renderer.shaders.entry(shader_id) {
+                    Entry::Occupied(mut entry) => {
+                        *entry.get_mut().write().unwrap() = new_shaders;
+                        entry.get().clone()
+                    }
+                    Entry::Vacant(entry) => entry.insert(ArcShift::new(new_shaders.into())).clone(),
+                };
+                Ok(compile_info)
             }
-            Entry::Vacant(entry) => entry.insert(ArcShift::new(new_shaders.into())).clone(),
+            Err(e) => Err(e),
         };
 
         async move {
-            let compilation_results = compilation_results.await;
+            let compilation_results = match compilation_results {
+                Ok(v) => v.await,
+                Err(e) => vec![e],
+            };
             let is_error = compilation_results
                 .iter()
                 .any(|v| v.message_type == wgpu::CompilationMessageType::Error);
