@@ -1,0 +1,23 @@
+{
+  "$schema": "http://virtual/scene-schema.json",
+  "models": [
+    {
+      "type": "model",
+      "id": "716110ea-ad90-46bb-8217-0ec926722489",
+      "name": "Dwagon",
+      "position": [0, 2, 0],
+      "rotation": [-1.5707963267948966, 0, 0],
+      "scale": 2.5,
+      "parametricShader": "cute-dwagon.wgsl",
+      "material": {
+        "color": [0.8948, 0.1675, 0.1882],
+        "roughness": 0.4471,
+        "metallic": 0.15,
+        "emissive": [0.01, 0, 0],
+        "diffuseTexture": "33.jpg"
+      },
+      "instanceCount": 1
+    }
+  ],
+  "description": "Geometry image go brrr."
+}
