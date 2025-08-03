@@ -48,7 +48,7 @@ export function fileNameToType(name: string): ContentType {
     return {
       kind: "unknown",
     };
-  } else if (extension === "wgsl") {
+  } else if (extension === "wgsl" || extension == "wesl") {
     return {
       kind: "shader",
     };
