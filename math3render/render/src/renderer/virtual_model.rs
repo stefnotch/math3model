@@ -4,7 +4,7 @@ use crate::{
     wgpu_context::{VIEW_FORMAT, WgpuContext},
 };
 use glam::Vec4;
-use shaders::{compute_patches, render_patches};
+use shaders::{compute_patches, render_patches, uniforms_model};
 use wesl::PkgResolver;
 use wgpu::ShaderModule;
 
@@ -47,8 +47,8 @@ impl ShaderPipelines {
 }
 
 impl MaterialInfo {
-    pub fn to_shader(&self) -> render_patches::Material {
-        render_patches::Material {
+    pub fn to_shader(&self) -> uniforms_model::Material {
+        uniforms_model::Material {
             color_roughness: Vec4::new(self.color.x, self.color.y, self.color.z, self.roughness),
             emissive_metallic: self.emissive.extend(self.metallic),
             has_texture: if self.diffuse_texture.is_some() { 1 } else { 0 },

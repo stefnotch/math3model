@@ -33,15 +33,15 @@ impl Gui {
 
     pub fn update<'a>(
         &'a mut self,
-        scene: &[(Model, crate::renderer::parametric_model::ParametricModel)],
+        _scene: &[(Model, crate::renderer::parametric_model::ParametricModel)],
     ) -> GuiRender<'a> {
         let mut full_output = self.ctx.run(self.next_input.take(), |ctx| {
-            egui::SidePanel::left("left_panel")
-                .show_separator_line(true)
-                .show(ctx, |ui| {
-                    ui.label("SCENE");
-                });
-
+            /*egui::SidePanel::left("left_panel")
+                            .show_separator_line(true)
+                            .show(ctx, |ui| {
+                                ui.label("SCENE");
+                            });
+            */
             egui::TopBottomPanel::bottom("bottom_panel")
                 .frame(egui::Frame::NONE)
                 .show_separator_line(false)

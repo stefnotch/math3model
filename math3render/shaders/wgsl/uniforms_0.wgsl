@@ -21,5 +21,6 @@ struct Extra {
 @group(0) @binding(1) var<uniform> screen: Screen;
 @group(0) @binding(2) var<uniform> mouse: Mouse;
 @group(0) @binding(3) var<uniform> extra: Extra;
+@group(0) @binding(4) var linear_sampler: sampler;
 
 var<private> instance_id: u32;

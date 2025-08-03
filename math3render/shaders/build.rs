@@ -1,27 +1,35 @@
 use std::{error::Error, path::Path};
 use wesl::{
     CompileOptions, EscapeMangler, Mangler, ModulePath, StandardResolver, compile_sourcemap,
-    emit_rerun_if_changed, syntax::PathOrigin,
+    syntax::PathOrigin,
 };
 use wgsl_to_wgpu::{MatrixVectorTypes, TypePath, WriteOptions};
 
 /// Taken from https://docs.rs/build-print/latest/build_print/macro.println.html
 macro_rules! log {
-    () => {
-        ::std::println!("cargo:warning=\x1b[2K\r");
-    };
     ($($arg:tt)*) => {
-        ::std::println!("cargo:warning=\x1b[2K\r{}", ::std::format!($($arg)*));
+        let message = ::std::format!($($arg)*);
+        for line in message.lines() {
+            ::std::println!("cargo:warning=\x1b[2K\r{}", line);
+        }
+    }
+}
+macro_rules! error {
+    ($($arg:tt)*) => {
+        let message = ::std::format!($($arg)*);
+        for line in message.lines() {
+            ::std::println!("cargo:warning=\x1b[1m\x1b[31merror:\x1b[0m{}", line);
+        }
     }
 }
 
 fn main() {
-    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo::rerun-if-changed=build.rs");
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = Path::new(&out_dir);
     let start_time = std::time::Instant::now();
     if let Err(err) = compile_shaders(&out_dir) {
-        eprintln!("{err:#?}");
+        error!("{err:#?}");
     }
     log!(
         "Compiled shaders {:?} in {}ms",
@@ -32,6 +40,7 @@ fn main() {
 
 fn compile_shaders(out_dir: &Path) -> Result<(), Box<dyn Error>> {
     let shader_directory = "wgsl";
+    println!("cargo::rerun-if-changed={shader_directory}");
     let mut shader_compiler = ShaderCompiler {
         resolver: StandardResolver::new(shader_directory),
         // Work around current wesl limitations
@@ -93,9 +102,8 @@ impl<'a> ShaderCompiler<'a> {
             &self.compile_options,
         )
         .inspect_err(|e| {
-            eprintln!("failed to build WESL shader. {entry_point}\n{e}");
+            error!("failed to build WESL shader. {entry_point}\n{e}");
         })?;
-        emit_rerun_if_changed(&compiled.modules, &self.resolver);
         let compiled_code = compiled.to_string();
         self.out_module
             .add_shader_module(
@@ -108,7 +116,7 @@ impl<'a> ShaderCompiler<'a> {
                 wesl_unmangler,
             )
             .inspect_err(|e| {
-                eprintln!("failed to build WESL shader. {entry_point}\n{e}");
+                error!("failed to build WESL shader. {entry_point}\n{e}");
             })?;
 
         std::fs::write(

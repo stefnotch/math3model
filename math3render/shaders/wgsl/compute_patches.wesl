@@ -10,6 +10,7 @@ import package::utils::{
   assert
 };
 import package::uniforms_0::{time, screen, mouse, extra, instance_id};
+import package::uniforms_model::{material, t_diffuse};
 import package::parametric_fn::sampleObject;
 
 struct InputBuffer {
@@ -24,11 +25,11 @@ struct ForceRenderFlag {
 // Group 1 is for things that change once per model
 // TODO: Read back the patches_length on the CPU to know when we're going out of bounds
 // (And how far out of bounds)
-@group(1) @binding(0) var<storage, read_write> render_buffer_2 : RenderBuffer;
-@group(1) @binding(1) var<storage, read_write> render_buffer_4 : RenderBuffer;
-@group(1) @binding(2) var<storage, read_write> render_buffer_8 : RenderBuffer;
-@group(1) @binding(3) var<storage, read_write> render_buffer_16 : RenderBuffer;
-@group(1) @binding(4) var<storage, read_write> render_buffer_32 : RenderBuffer;
+@group(1) @binding(2) var<storage, read_write> render_buffer_2 : RenderBuffer;
+@group(1) @binding(3) var<storage, read_write> render_buffer_4 : RenderBuffer;
+@group(1) @binding(4) var<storage, read_write> render_buffer_8 : RenderBuffer;
+@group(1) @binding(5) var<storage, read_write> render_buffer_16 : RenderBuffer;
+@group(1) @binding(6) var<storage, read_write> render_buffer_32 : RenderBuffer;
 // Group 2 is for things that change multiple times per model
 @group(2) @binding(0) var<uniform> input_buffer : InputBuffer;
 @group(2) @binding(1) var<storage, read_write> dispatch_next : DispatchIndirectArgs;

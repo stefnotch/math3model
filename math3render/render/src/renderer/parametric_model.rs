@@ -15,12 +15,12 @@ use crate::{
 use arcshift::ArcShift;
 use encase::ShaderType;
 use glam::UVec2;
-use shaders::{compute_patches, copy_patches, render_patches, utils};
+use shaders::{compute_patches, copy_patches, render_patches, uniforms_model, utils};
 use wgpu::Queue;
 
 pub struct ParametricModel {
     model: TypedBuffer<render_patches::Model>,
-    material: TypedBuffer<render_patches::Material>,
+    material: TypedBuffer<uniforms_model::Material>,
     t_diffuse: ArcShift<Texture>,
     shader: ArcShift<ShaderPipelines>,
     render: ParametricModelRender,
@@ -39,7 +39,7 @@ pub struct ParametricModelRender {
     pub render_buffer: Vec<TypedBuffer<utils::RenderBuffer>>,
     pub indirect_draw: TypedBuffer<Vec<copy_patches::DrawIndexedIndirectArgs>>,
     pub copy_patches_bind_group_0: copy_patches::bind_groups::BindGroup0,
-    pub compute_patches_bind_group_1: compute_patches::bind_groups::BindGroup1,
+    pub render_bind_group_2: Vec<render_patches::bind_groups::BindGroup2>,
 }
 
 impl ParametricModel {
@@ -157,6 +157,19 @@ impl ParametricModel {
             render_buffer.write_buffer(queue, &render_buffer_reset);
         }
 
+        let bind_group_1 = compute_patches::bind_groups::BindGroup1::from_bindings(
+            &context.device,
+            compute_patches::bind_groups::BindGroupLayout1 {
+                render_buffer_2: self.render.render_buffer[0].as_buffer_binding(),
+                render_buffer_4: self.render.render_buffer[1].as_buffer_binding(),
+                render_buffer_8: self.render.render_buffer[2].as_buffer_binding(),
+                render_buffer_16: self.render.render_buffer[3].as_buffer_binding(),
+                render_buffer_32: self.render.render_buffer[4].as_buffer_binding(),
+                material: self.material.as_buffer_binding(),
+                t_diffuse: &self.t_diffuse.get().view,
+            },
+        );
+
         // Each round, we do a ping-pong and pong-ping
         // 2*4 rounds is enough to subdivide a 4k screen into 16x16 pixel patches
         let double_number_of_rounds = 4;
@@ -178,7 +191,7 @@ impl ParametricModel {
                 compute_patches::set_bind_groups(
                     &mut compute_pass.recorder,
                     &scene_data.scene_bind_group_compute,
-                    &self.render.compute_patches_bind_group_1,
+                    &bind_group_1,
                     &self.lod.bind_group_2[0],
                 );
                 compute_pass.dispatch_workgroups_indirect(&self.lod.indirect_compute_buffer[0], 0);
@@ -204,7 +217,7 @@ impl ParametricModel {
                 compute_patches::set_bind_groups(
                     &mut compute_pass.recorder,
                     &scene_data.scene_bind_group_compute,
-                    &self.render.compute_patches_bind_group_1,
+                    &bind_group_1,
                     &self.lod.bind_group_2[1],
                 );
                 compute_pass.dispatch_workgroups_indirect(&self.lod.indirect_compute_buffer[1], 0);
@@ -235,10 +248,18 @@ impl ParametricModel {
         quad_meshes: &[Mesh],
     ) {
         render_pass.set_pipeline(&self.shader.get().render);
+        let model_bind_group = render_patches::bind_groups::BindGroup1::from_bindings(
+            &context.device,
+            render_patches::bind_groups::BindGroupLayout1 {
+                model: self.model.as_buffer_binding(),
+                material: self.material.as_buffer_binding(),
+                t_diffuse: &self.t_diffuse.get().view,
+            },
+        );
 
-        for (i, (render, mesh)) in self
+        for (i, (render_bind_group, mesh)) in self
             .render
-            .render_buffer
+            .render_bind_group_2
             .iter()
             .zip(quad_meshes.iter())
             .enumerate()
@@ -251,15 +272,8 @@ impl ParametricModel {
             render_patches::set_bind_groups(
                 &mut render_pass.recorder,
                 scene_bind_group,
-                &render_patches::bind_groups::BindGroup1::from_bindings(
-                    &context.device,
-                    render_patches::bind_groups::BindGroupLayout1 {
-                        model: self.model.as_buffer_binding(),
-                        render_buffer: render.as_buffer_binding(),
-                        material: self.material.as_buffer_binding(),
-                        t_diffuse: &self.t_diffuse.get().view,
-                    },
-                ),
+                &model_bind_group,
+                &render_bind_group,
             );
             render_pass.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
             render_pass.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
@@ -369,6 +383,18 @@ impl ParametricModelRender {
             })
             .collect();
 
+        let render_bind_group_2: Vec<_> = render_buffer
+            .iter()
+            .map(|render| {
+                render_patches::bind_groups::BindGroup2::from_bindings(
+                    &context.device,
+                    render_patches::bind_groups::BindGroupLayout2 {
+                        render_buffer: render.as_buffer_binding(),
+                    },
+                )
+            })
+            .collect();
+
         let indirect_draw_data = copy_patches::DrawIndexedIndirectArgs {
             index_count: 0,
             instance_count: 0, // Our shader sets this
@@ -402,16 +428,7 @@ impl ParametricModelRender {
                     indirect_draw: indirect_draw.as_buffer_binding(),
                 },
             ),
-            compute_patches_bind_group_1: compute_patches::bind_groups::BindGroup1::from_bindings(
-                &context.device,
-                compute_patches::bind_groups::BindGroupLayout1 {
-                    render_buffer_2: render_buffer[0].as_buffer_binding(),
-                    render_buffer_4: render_buffer[1].as_buffer_binding(),
-                    render_buffer_8: render_buffer[2].as_buffer_binding(),
-                    render_buffer_16: render_buffer[3].as_buffer_binding(),
-                    render_buffer_32: render_buffer[4].as_buffer_binding(),
-                },
-            ),
+            render_bind_group_2,
             render_buffer,
             indirect_draw,
         }

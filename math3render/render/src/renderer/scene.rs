@@ -120,6 +120,7 @@ impl SceneData {
                 screen: screen_buffer.as_buffer_binding(),
                 extra: extra_buffer.as_buffer_binding(),
                 mouse: mouse_buffer.as_buffer_binding(),
+                linear_sampler: &linear_sampler,
             },
         );
         Self {

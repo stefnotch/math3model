@@ -1,5 +1,6 @@
 import package::utils::{RenderBufferRead, patch_decode};
-import package::uniforms_0::{time, screen, mouse, extra, instance_id};
+import package::uniforms_0::{time, screen, mouse, extra, instance_id, linear_sampler};
+import package::uniforms_model::{material, t_diffuse};
 import package::pbr::{
     LightSource, 
     MaterialInfo, 
@@ -39,25 +40,12 @@ struct Model {
     object_id: u32
 }
 
-struct Material {
-    // color.rgb is the color of the material
-    // color.a is the roughness of the material
-    color_roughness: vec4<f32>,
-    // emissive_metallic.rgb is the emissive color of the material
-    // emissive_metallic.a is the metallicness of the material
-    emissive_metallic: vec4<f32>,
-    // is a boolean
-    has_texture: u32,
-    texture_scale: vec2f
-}
 
-@group(0) @binding(4) var<uniform> camera: Camera;
-@group(0) @binding(5) var<storage, read> lights: Lights;
-@group(0) @binding(6) var linear_sampler: sampler;
-@group(1) @binding(1) var<uniform> model: Model;
-@group(1) @binding(2) var<storage, read> render_buffer: RenderBufferRead;
-@group(1) @binding(3) var<uniform> material: Material;
-@group(1) @binding(4) var t_diffuse: texture_2d<f32>;
+
+@group(0) @binding(5) var<uniform> camera: Camera;
+@group(0) @binding(6) var<storage, read> lights: Lights;
+@group(1) @binding(2) var<uniform> model: Model;
+@group(2) @binding(0) var<storage, read> render_buffer: RenderBufferRead;
 
 struct VertexOutput {
     @builtin(position) clip_position: vec4<f32>,
@@ -128,7 +116,7 @@ struct FragmentOutput {
 fn fs_main(in: VertexOutput) -> FragmentOutput {
     if(false) {
       // silly hack to get the auto layout to pick up on the uniforms
-      let a = sampleObject(vec2f(0.0)); 
+      _ = sampleObject(vec2f(0.0)); 
     }
     let v = normalize(camera.world_position.xyz - in.world_position);
     // let n = normalize(in.world_normal);
