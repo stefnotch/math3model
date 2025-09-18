@@ -23,11 +23,11 @@ log = { workspace = true }
 render = { path = "../render" }
 serde = { version = "1.0", features = ["derive"] }
 tsify = "0.5.5"
-wasm-bindgen = { version = "0.2.100", default-features = false, features = [
+wasm-bindgen = { version = "0.2.103", default-features = false, features = [
   "std",
 ] }
-wasm-bindgen-futures = "0.4.50"
-web-sys = { version = "0.3.77", features = [
+wasm-bindgen-futures = "0.4.53"
+web-sys = { version = "0.3.80", features = [
   "HtmlCanvasElement",
   "ImageBitmap",
 ] }

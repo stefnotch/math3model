@@ -40,13 +40,13 @@ export default function wasmBindgenPlugin(): Plugin {
         await compileWasm();
       },
     },
-    hotUpdate({ file }) {
+    hotUpdate({ file, modules }) {
       if (!file.startsWith(rustPath)) {
-        return;
+        return modules;
       }
       if (file.startsWith(rustPkgPath)) {
         // Hot update
-        return;
+        return modules;
       } else {
         // Ignore updates to other files
         return [];
@@ -103,7 +103,7 @@ async function compileWasm() {
         "--out-dir=./pkg",
         ...(isProduction
           ? ["./target/wasm32-unknown-unknown/release/web.wasm"]
-          : ["--debug", "./target/wasm32-unknown-unknown/debug/web.wasm"]),
+          : ["--debug", "--keep-debug", "./target/wasm32-unknown-unknown/debug/web.wasm"]),
       ],
       {
         cwd: rustPath,

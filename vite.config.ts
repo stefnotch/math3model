@@ -9,6 +9,7 @@ import wasmBindgenPlugin from "./src/wasm-bindgen-plugin.ts";
 
 import { defineConfig, UserConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+ import * as compiler from 'vue/compiler-sfc' 
 
 // https://vitejs.dev/config/
 const config: UserConfig = defineConfig({
@@ -16,7 +17,7 @@ const config: UserConfig = defineConfig({
   plugins: [
     wasmBindgenPlugin(),
     tailwindcss(),
-    vue(),
+    vue({compiler}),
     Icons(),
     Components({
       resolvers: [

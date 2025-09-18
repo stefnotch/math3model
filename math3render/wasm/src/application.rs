@@ -1,3 +1,4 @@
+use crate::wasm_abi::{WasmCompilationMessage, WasmModelInfo, WasmPosition, WasmShaderInfo};
 use glam::Vec3;
 use log::error;
 use render::{
@@ -17,8 +18,6 @@ use wasm_bindgen::{JsError, JsValue, prelude::wasm_bindgen};
 use web_sys::{HtmlCanvasElement, ImageBitmap};
 use winit::event_loop::{EventLoop, EventLoopProxy};
 
-use crate::wasm_abi::{WasmCompilationMessage, WasmModelInfo, WasmPosition, WasmShaderInfo};
-
 #[wasm_bindgen]
 pub struct WasmApplication {
     event_loop_proxy: EventLoopProxy<AppCommand>,
@@ -29,6 +28,12 @@ impl WasmApplication {
     pub async fn new(_canvas: HtmlCanvasElement) -> Result<WasmApplication, JsError> {
         let event_loop = EventLoop::<AppCommand>::with_user_event().build()?;
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
+        #[cfg(target_arch = "wasm32")]
+        winit::platform::web::EventLoopExtWebSys::set_poll_strategy(
+            &event_loop,
+            winit::platform::web::PollStrategy::IdleCallback,
+        );
+
         let event_loop_proxy = event_loop.create_proxy();
 
         wasm_bindgen_futures::spawn_local({
