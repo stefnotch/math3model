@@ -52,19 +52,7 @@ struct VertexOutput {
     @location(0) world_normal: vec3<f32>,
     @location(1) world_position: vec3<f32>,
     @location(2) texture_coords: vec2<f32>,
-    @location(3) color: vec4<f32>,
 }
-
-const color_options = array<vec4f,8>(
-    vec4f(1.0, 0.0, 0.0, 1.0),
-    vec4f(0.0, 1.0, 0.0, 1.0),
-    vec4f(0.0, 0.0, 1.0, 1.0),
-    vec4f(1.0, 1.0, 0.0, 1.0),
-    vec4f(1.0, 0.0, 1.0, 1.0),
-    vec4f(0.0, 1.0, 1.0, 1.0),
-    vec4f(1.0, 1.0, 1.0, 1.0),
-    vec4f(0.5, 0.5, 0.5, 1.0),
-);
 
 @vertex
 fn vs_main(
@@ -83,27 +71,6 @@ fn vs_main(
     out.texture_coords = quad_point;
     let normal = vec3<f32>(0.0, -1.0, 0.0); // TODO: We'll compute this later
     out.world_normal = (model.model_similarity * vec4<f32>(normal, 0.0)).xyz; // Only uniform scaling
-
-    let i = in.instance_index % 8;
-    if (i == 0) {
-    out.color = color_options[0];
-    } else if (i == 1) {
-    out.color = color_options[1];
-    } else if (i == 2) {
-    out.color = color_options[2];
-    } else if (i == 3) {
-    out.color = color_options[3];
-    } else if (i == 4) {
-    out.color = color_options[4];
-    } else if (i == 5) {
-    out.color = color_options[5];
-    } else if (i == 6) {
-    out.color = color_options[6];
-    } else if (i == 7) {
-    out.color = color_options[7];
-    }else {
-    out.color = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-    }
     return out;
 }
 
@@ -191,8 +158,6 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
     fragmentOutput.color = vec4f(color, 1.0);
     fragmentOutput.object_id = model.object_id;
     return fragmentOutput;
-    // return in.color; TODO: Why does this cause z-buffer fighting? 
-    // Maybe we have z-buffer fighting, and with consistent colors we just don't notice it?
 }
 
  

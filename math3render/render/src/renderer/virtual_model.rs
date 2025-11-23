@@ -37,7 +37,7 @@ impl ShaderPipelines {
         &self,
     ) -> impl Future<Output = Vec<wgpu::CompilationMessage>> + use<> {
         let comp_info_1 = self.shaders[0].get_compilation_info();
-        let comp_info_2 = self.shaders[0].get_compilation_info();
+        let comp_info_2 = self.shaders[1].get_compilation_info();
         async move {
             let mut messages = comp_info_1.await.messages;
             messages.extend(comp_info_2.await.messages);
